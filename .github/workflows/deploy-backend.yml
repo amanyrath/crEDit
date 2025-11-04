@@ -43,6 +43,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
 
+      - name: Verify AWS credentials
+        run: |
+          echo "Verifying AWS credentials..."
+          aws sts get-caller-identity || (echo "Error: Invalid AWS credentials" && exit 1)
+
       - name: Deploy Lambda stack
         env:
           ENVIRONMENT: ${{ secrets.ENVIRONMENT || 'dev' }}

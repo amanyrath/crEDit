@@ -48,13 +48,13 @@ development_status:
   2-3-create-sign-up-form-component: drafted
   2-4-create-sign-up-form-component: review
   2-5-implement-role-based-access-control: review
-  2-6-create-consent-modal-component: review
+  2-6-create-consent-modal-component: done
   2-7-implement-session-management-and-token-refresh: review
   epic-3: backlog
   3-1-create-database-seeding-script-for-demo-data: review
   3-4-create-insights-api-endpoint: review
   3-2-create-transactions-api-endpoint: review
   epic-4: backlog
-  4-1-create-rationale-box-component: review
-  4-2-create-education-card-component: in-progress
+  4-1-create-rationale-box-component: done
+  4-2-create-education-card-component: review
 

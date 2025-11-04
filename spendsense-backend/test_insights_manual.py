@@ -7,7 +7,7 @@ Tests the /api/v1/users/me/insights endpoint with various scenarios
 import sys
 import json
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock, AsyncMock
 
 # Add parent directory to path
 sys.path.insert(0, '/Users/alexismanyrath/Code/crEDit/spendsense-backend')
@@ -49,8 +49,11 @@ def test_insights_endpoint_with_mock_auth():
         email="test@example.com"
     )
     
-    # Mock the require_consumer dependency
-    with patch('app.api.v1.consumer.require_consumer', return_value=mock_user):
+    # Mock get_current_user dependency (which require_consumer depends on)
+    # Use AsyncMock since get_current_user is async
+    mock_get_current_user_func = AsyncMock(return_value=mock_user)
+    
+    with patch('app.dependencies.get_current_user', mock_get_current_user_func):
         with patch('app.api.v1.consumer.get_session') as mock_get_session:
             # Mock database session
             from unittest.mock import MagicMock
@@ -127,7 +130,9 @@ def test_insights_endpoint_with_period():
     for period in ["30d", "90d"]:
         print(f"\nTesting period: {period}")
         
-        with patch('app.api.v1.consumer.require_consumer', return_value=mock_user):
+        mock_get_current_user_func = AsyncMock(return_value=mock_user)
+        
+        with patch('app.dependencies.get_current_user', mock_get_current_user_func):
             with patch('app.api.v1.consumer.get_session') as mock_get_session:
                 from unittest.mock import MagicMock
                 mock_session = MagicMock()
@@ -181,7 +186,9 @@ def test_insights_endpoint_invalid_period():
         email="test@example.com"
     )
     
-    with patch('app.api.v1.consumer.require_consumer', return_value=mock_user):
+    mock_get_current_user_func = AsyncMock(return_value=mock_user)
+    
+    with patch('app.dependencies.get_current_user', mock_get_current_user_func):
         response = client.get(
             "/api/v1/users/me/insights?period=invalid",
             headers={"Authorization": "Bearer mock-token"}
