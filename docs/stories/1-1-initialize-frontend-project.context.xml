@@ -1,0 +1,178 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1.1</storyId>
+    <title>Initialize Frontend Project</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-1-initialize-frontend-project.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>set up the React + Vite frontend project with TypeScript and Tailwind CSS</iWant>
+    <soThat>I have a working development environment for building the consumer and operator interfaces</soThat>
+    <tasks>
+      <task id="1" title="Create Vite React TypeScript project" ac="1">
+        <subtask>Run `npm create vite@latest spendsense-frontend -- --template react-ts`</subtask>
+        <subtask>Navigate to project directory</subtask>
+        <subtask>Verify project structure created</subtask>
+        <subtask>Test that `npm install` completes successfully</subtask>
+      </task>
+      <task id="2" title="Install and configure Tailwind CSS" ac="2">
+        <subtask>Install Tailwind CSS, PostCSS, and Autoprefixer: `npm install -D tailwindcss postcss autoprefixer`</subtask>
+        <subtask>Initialize Tailwind config: `npx tailwindcss init -p`</subtask>
+        <subtask>Configure `tailwind.config.js` with content paths: `['./index.html', './src/**/*.{js,ts,jsx,tsx}']`</subtask>
+        <subtask>Add Tailwind directives to CSS file (e.g., `src/index.css`)</subtask>
+        <subtask>Verify Tailwind CSS is working (create test component with Tailwind classes)</subtask>
+      </task>
+      <task id="3" title="Install core dependencies" ac="3">
+        <subtask>Install React Query: `npm install @tanstack/react-query`</subtask>
+        <subtask>Install React Router: `npm install react-router-dom`</subtask>
+        <subtask>Install date-fns: `npm install date-fns`</subtask>
+        <subtask>Install Recharts: `npm install recharts`</subtask>
+        <subtask>Verify all packages installed in `package.json`</subtask>
+      </task>
+      <task id="4" title="Install AWS Amplify packages" ac="4">
+        <subtask>Install AWS Amplify Auth: `npm install @aws-amplify/auth`</subtask>
+        <subtask>Install AWS Amplify Core: `npm install @aws-amplify/core`</subtask>
+        <subtask>Verify packages installed correctly</subtask>
+      </task>
+      <task id="5" title="Set up project structure" ac="8">
+        <subtask>Create `src/features/` directory structure</subtask>
+        <subtask>Create `src/components/` directory structure</subtask>
+        <subtask>Create `src/lib/` directory structure</subtask>
+        <subtask>Verify directory structure matches architecture document</subtask>
+      </task>
+      <task id="6" title="Configure ESLint and Prettier" ac="7">
+        <subtask>Install ESLint and Prettier: `npm install -D eslint prettier eslint-config-prettier eslint-plugin-prettier`</subtask>
+        <subtask>Create `.eslintrc.json` with appropriate React/TypeScript rules</subtask>
+        <subtask>Create `.prettierrc` configuration file</subtask>
+        <subtask>Create `.prettierignore` file</subtask>
+        <subtask>Add lint scripts to `package.json`: `"lint": "eslint . --ext .ts,.tsx"` and `"format": "prettier --write \"src/**/*.{ts,tsx,json,css}\""`</subtask>
+      </task>
+      <task id="7" title="Configure TypeScript strict mode" ac="1,8">
+        <subtask>Update `tsconfig.json` to enable strict mode</subtask>
+        <subtask>Configure path aliases if needed (e.g., `@/` for `src/`)</subtask>
+        <subtask>Verify TypeScript compilation works</subtask>
+      </task>
+      <task id="8" title="Verify build and development server" ac="5,6">
+        <subtask>Run `npm run build` and verify successful build</subtask>
+        <subtask>Run `npm run dev` and verify development server starts</subtask>
+        <subtask>Test that application loads in browser</subtask>
+        <subtask>Verify hot module replacement works</subtask>
+      </task>
+      <task id="9" title="Testing setup" ac="5,6">
+        <subtask>Verify Vitest is available (comes with Vite)</subtask>
+        <subtask>Create basic test file to verify testing setup works</subtask>
+        <subtask>Run tests: `npm run test`</subtask>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Frontend project created using `npm create vite@latest spendsense-frontend -- --template react-ts`</criterion>
+    <criterion id="2">Tailwind CSS installed and configured with `tailwind.config.js` and `postcss.config.js`</criterion>
+    <criterion id="3">React Query, React Router, date-fns, and Recharts installed</criterion>
+    <criterion id="4">AWS Amplify packages installed for authentication</criterion>
+    <criterion id="5">Project builds successfully with `npm run build`</criterion>
+    <criterion id="6">Development server runs with `npm run dev`</criterion>
+    <criterion id="7">ESLint and Prettier configured with appropriate rules</criterion>
+    <criterion id="8">Basic project structure matches architecture document (src/features/, src/components/, src/lib/)</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/epics.md" title="Epic Breakdown" section="Epic 1: Project Foundation & Infrastructure, Story 1.1">
+        Story details including acceptance criteria, prerequisites, and technical notes for frontend project initialization.
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Project Initialization">
+        Exact commands to execute for frontend project setup: npm create vite, dependency installation, Tailwind configuration.
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Decision Summary">
+        Technology stack decisions: React 18.x, Vite, TypeScript 5.x, Tailwind CSS 3.x, React Query, React Router 6.x, Recharts, AWS Amplify.
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Project Structure">
+        Frontend project structure with feature-based organization: src/features/, src/components/, src/lib/ directories and expected file locations.
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture Document" section="Decision Summary">
+        Testing framework: Vitest for frontend unit tests, ESLint + Prettier for linting and formatting.
+      </doc>
+    </docs>
+    <code>
+      <!-- No existing code artifacts - this is the first story initializing the frontend project -->
+    </code>
+    <dependencies>
+      <manifest type="package.json" path="frontend/package.json">
+        <package name="react" version="18.x" scope="production" />
+        <package name="react-dom" version="18.x" scope="production" />
+        <package name="vite" version="latest" scope="dev" />
+        <package name="typescript" version="5.x" scope="dev" />
+        <package name="@tanstack/react-query" version="latest" scope="production" />
+        <package name="react-router-dom" version="6.x" scope="production" />
+        <package name="date-fns" version="latest" scope="production" />
+        <package name="recharts" version="latest" scope="production" />
+        <package name="@aws-amplify/auth" version="latest" scope="production" />
+        <package name="@aws-amplify/core" version="latest" scope="production" />
+        <package name="tailwindcss" version="3.x" scope="dev" />
+        <package name="postcss" version="latest" scope="dev" />
+        <package name="autoprefixer" version="latest" scope="dev" />
+        <package name="eslint" version="latest" scope="dev" />
+        <package name="prettier" version="latest" scope="dev" />
+        <package name="eslint-config-prettier" version="latest" scope="dev" />
+        <package name="eslint-plugin-prettier" version="latest" scope="dev" />
+      </manifest>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">
+      <rule>Use React 18 with Vite build tool - no other React setup frameworks</rule>
+      <rule>TypeScript strict mode must be enabled for type safety</rule>
+      <rule>Feature-based organization: src/features/, src/components/, src/lib/ structure is mandatory</rule>
+      <rule>Tailwind CSS must be configured to work with shadcn/ui components (content paths must include all relevant files)</rule>
+    </constraint>
+    <constraint type="coding-standards">
+      <rule>ESLint and Prettier must be configured and working together</rule>
+      <rule>Path aliases should be considered for cleaner imports (e.g., `@/` for `src/`)</rule>
+      <rule>All dependencies must be installed via npm with exact versions from architecture document</rule>
+    </constraint>
+    <constraint type="testing">
+      <rule>Vitest comes with Vite - verify it's available and create basic test to confirm setup</rule>
+      <rule>Test files should follow naming convention (e.g., `*.test.ts`, `*.test.tsx`)</rule>
+    </constraint>
+  </constraints>
+
+  <interfaces>
+    <!-- No existing interfaces - project initialization story -->
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use Vitest (included with Vite) for unit testing. Testing framework is pre-configured with Vite template. Create basic test file to verify testing setup works. Test files should be co-located with source files or in separate test directories. Follow React Testing Library patterns for component testing (to be set up in future stories).
+    </standards>
+    <locations>
+      <location>frontend/src/**/*.test.ts</location>
+      <location>frontend/src/**/*.test.tsx</location>
+      <location>frontend/src/**/*.spec.ts</location>
+      <location>frontend/src/**/*.spec.tsx</location>
+    </locations>
+    <ideas>
+      <idea criterion="5,6">
+        Create a basic test that verifies the Vite build system works and the development server can start. Test that the application renders without errors.
+      </idea>
+      <idea criterion="2">
+        Create a test component with Tailwind classes to verify Tailwind CSS is properly configured and styles are applied.
+      </idea>
+      <idea criterion="7">
+        Verify ESLint can detect linting errors and Prettier can format code by running lint and format commands.
+      </idea>
+      <idea criterion="8">
+        Test that the project structure directories exist and TypeScript can resolve imports from the configured paths.
+      </idea>
+    </ideas>
+  </tests>
+</story-context>
+
+
