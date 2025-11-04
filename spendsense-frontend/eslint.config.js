@@ -24,9 +24,10 @@ export default defineConfig([
     rules: {
       'prettier/prettier': 'error',
       // Allow exporting constants alongside components (common in shadcn/ui)
+      // Allow exporting hooks alongside components (common pattern)
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true },
+        { allowConstantExport: true, allowExportNames: ['useAuthContext'] },
       ],
     },
     languageOptions: {
