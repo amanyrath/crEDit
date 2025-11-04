@@ -1,0 +1,26 @@
+# Production dependencies for SpendSense Backend
+# Python 3.11+ required
+
+# FastAPI and ASGI server
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+mangum>=0.18.0
+
+# AWS integration
+boto3>=1.35.0
+
+# Data validation and configuration
+pydantic>=2.9.0
+python-dotenv>=1.0.0
+
+# Data processing
+pandas>=2.2.0
+pytz>=2024.1
+
+# LLM integration
+openai>=1.54.0
+
+# Database
+sqlalchemy>=2.0.0
+psycopg2-binary>=2.9.9
+alembic>=1.13.0

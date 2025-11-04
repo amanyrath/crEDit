@@ -90,6 +90,13 @@ lerna-debug.log*
 *.key
 *.cert
 
+# AWS CDK
+infrastructure/cdk/cdk.out/
+infrastructure/cdk/node_modules/
+infrastructure/cdk/.venv/
+infrastructure/cdk/venv/
+cdk.context.json
+
 # Temporary Files
 tmp/
 temp/

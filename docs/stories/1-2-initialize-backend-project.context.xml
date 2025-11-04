@@ -1,0 +1,115 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>2</storyId>
+    <title>Initialize Backend Project</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-2-initialize-backend-project.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>developer</asA>
+    <iWant>to set up the FastAPI backend project with Python virtual environment</iWant>
+    <soThat>I have a working development environment for building the API and business logic</soThat>
+    <tasks>
+      <task id="1" ac="1,8">Create backend directory structure</task>
+      <task id="2" ac="2">Set up Python virtual environment</task>
+      <task id="3" ac="3">Install core FastAPI dependencies</task>
+      <task id="4" ac="4">Install AWS integration dependencies</task>
+      <task id="5" ac="5">Install data processing dependencies</task>
+      <task id="6" ac="6">Install LLM integration package</task>
+      <task id="7" ac="7">Install testing dependencies</task>
+      <task id="8" ac="8,9">Create basic FastAPI application structure</task>
+      <task id="9" ac="10">Create requirements files</task>
+      <task id="10" ac="2,9">Configure development environment</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Backend directory created with `spendsense-backend/` structure</criterion>
+    <criterion id="2">Python virtual environment created and activated</criterion>
+    <criterion id="3">FastAPI, uvicorn, mangum installed for Lambda deployment</criterion>
+    <criterion id="4">boto3, pydantic, python-dotenv installed for AWS integration</criterion>
+    <criterion id="5">pandas, pytz installed for data processing</criterion>
+    <criterion id="6">OpenAI package installed (or anthropic for Claude)</criterion>
+    <criterion id="7">pytest and pytest-asyncio installed for testing</criterion>
+    <criterion id="8">Project structure matches architecture document (app/, lambdas/, tests/)</criterion>
+    <criterion id="9">Basic FastAPI app runs with `uvicorn app.main:app --reload`</criterion>
+    <criterion id="10">Requirements.txt and requirements-dev.txt created</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/architecture.md" title="Architecture" section="Project Initialization">
+        Backend setup commands: mkdir spendsense-backend, python -m venv venv, pip install fastapi uvicorn[standard] mangum, boto3 pydantic python-dotenv, pandas pytz, openai, pytest pytest-asyncio.
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture" section="Decision Summary">
+        Backend Framework: FastAPI Latest. Language: Python 3.11+. Testing: pytest Latest. Linting: Ruff + Black + mypy Latest.
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture" section="Project Structure">
+        Backend structure: app/ (main.py, handler.py, config.py, dependencies.py), app/api/v1/, app/services/, app/models/, app/database/, app/utils/, app/middleware/, lambdas/, tests/.
+      </doc>
+      <doc path="docs/architecture.md" title="Architecture" section="Development Environment">
+        Backend setup: python -m venv venv, source venv/bin/activate, pip install -r requirements.txt, uvicorn app.main:app --reload. Environment variables: .env file with DATABASE_URL, COGNITO settings, AWS_REGION, OPENAI_API_KEY.
+      </doc>
+      <doc path="docs/epics.md" title="Epics" section="Story 1.2">
+        Story 1.2: Initialize Backend Project. Acceptance criteria include directory structure, virtual environment, FastAPI dependencies, AWS integration, data processing, LLM integration, testing, project structure, FastAPI app, and requirements files.
+      </doc>
+      <doc path="docs/stories/1-1-initialize-frontend-project.md" title="Story 1.1" section="Learnings from Previous Story">
+        Frontend project created at spendsense-frontend/. Follow similar naming convention for backend at spendsense-backend/. Root .gitignore covers venv/ and Python-specific ignores. Testing: backend should use pytest with pytest-asyncio. Environment variables: backend uses .env with python-dotenv.
+      </doc>
+    </docs>
+    <code>
+      <!-- No existing code artifacts - this is the first backend story -->
+    </code>
+    <dependencies>
+      <ecosystem name="python">
+        <package name="fastapi" version="latest" />
+        <package name="uvicorn" version="latest" extras="standard" />
+        <package name="mangum" version="latest" />
+        <package name="boto3" version="latest" />
+        <package name="pydantic" version="latest" />
+        <package name="python-dotenv" version="latest" />
+        <package name="pandas" version="latest" />
+        <package name="pytz" version="latest" />
+        <package name="openai" version="latest" />
+        <package name="pytest" version="latest" dev="true" />
+        <package name="pytest-asyncio" version="latest" dev="true" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="language">Python 3.11+ required as specified in architecture</constraint>
+    <constraint type="framework">FastAPI with AWS Lambda deployment via Mangum adapter</constraint>
+    <constraint type="structure">Feature-based organization with app/, lambdas/, and tests/ directories matching architecture document</constraint>
+    <constraint type="testing">pytest with pytest-asyncio for async endpoint testing</constraint>
+    <constraint type="configuration">Use python-dotenv for local development environment variables</constraint>
+    <constraint type="deployment">Mangum adapter required for ASGI applications on Lambda</constraint>
+    <constraint type="naming">Follow naming convention: spendsense-backend/ (matching frontend spendsense-frontend/)</constraint>
+    <constraint type="versioning">Use pip freeze to generate pinned versions in requirements files</constraint>
+  </constraints>
+
+  <interfaces>
+    <!-- No existing interfaces - this story creates the initial FastAPI app structure -->
+  </interfaces>
+
+  <tests>
+    <standards>
+      Use pytest with pytest-asyncio for async endpoint testing. Tests should be organized in tests/ directory with conftest.py for pytest configuration. Follow standard Python testing patterns with fixtures and async test support.
+    </standards>
+    <locations>
+      tests/
+    </locations>
+    <ideas>
+      <test ac="9">Create test_main.py to verify FastAPI app initializes correctly and health check endpoint works</test>
+      <test ac="8">Verify project structure matches architecture document (app/, lambdas/, tests/ directories exist)</test>
+      <test ac="3,4,5,6,7">Verify all required packages are installed and importable</test>
+      <test ac="9">Verify FastAPI app can run with uvicorn app.main:app --reload command</test>
+      <test ac="10">Verify requirements.txt and requirements-dev.txt contain correct dependencies</test>
+    </ideas>
+  </tests>
+</story-context>
+
