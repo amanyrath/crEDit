@@ -238,10 +238,10 @@ class TestTransactionsEndpoint:
         assert response.status_code == 401
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_transactions_with_auth(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_transactions_with_auth(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test endpoint with valid authentication"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         # Mock database session
         mock_session = Mock(spec=Session)
@@ -271,10 +271,10 @@ class TestTransactionsEndpoint:
         assert len(data["data"]["transactions"]) == 3
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_transactions_with_date_filters(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_transactions_with_date_filters(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test endpoint with date filters"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
@@ -304,10 +304,10 @@ class TestTransactionsEndpoint:
         assert len(data["data"]["transactions"]) == 2
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_transactions_with_pagination(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_transactions_with_pagination(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test endpoint with pagination"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
@@ -336,10 +336,10 @@ class TestTransactionsEndpoint:
         assert data["data"]["pagination"]["total_pages"] == 2
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_transactions_empty_result(self, mock_get_current_user, mock_get_session, client, mock_consumer_user):
+    @patch('app.dependencies.require_consumer')
+    def test_get_transactions_empty_result(self, mock_require_consumer, mock_get_session, client, mock_consumer_user):
         """Test endpoint with empty result"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
@@ -364,10 +364,10 @@ class TestTransactionsEndpoint:
         assert data["data"]["pagination"]["total"] == 0
         assert data["data"]["pagination"]["total_pages"] == 0
     
-    @patch('app.dependencies.get_current_user')
-    def test_get_transactions_invalid_date_format(self, mock_get_current_user, client, mock_consumer_user):
+    @patch('app.dependencies.require_consumer')
+    def test_get_transactions_invalid_date_format(self, mock_require_consumer, client, mock_consumer_user):
         """Test endpoint with invalid date format"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         # FastAPI will validate date format, so invalid format should return 422
         response = client.get(
@@ -378,10 +378,10 @@ class TestTransactionsEndpoint:
         
         assert response.status_code == 422
     
-    @patch('app.dependencies.get_current_user')
-    def test_get_transactions_invalid_pagination(self, mock_get_current_user, client, mock_consumer_user):
+    @patch('app.dependencies.require_consumer')
+    def test_get_transactions_invalid_pagination(self, mock_require_consumer, client, mock_consumer_user):
         """Test endpoint with invalid pagination parameters"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         # Test negative page
         response = client.get(
@@ -402,10 +402,10 @@ class TestTransactionsEndpoint:
         assert response.status_code == 422
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_transactions_response_format(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_transactions_response_format(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test response format matches specification"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session

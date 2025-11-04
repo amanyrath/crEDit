@@ -1,18 +1,22 @@
 """Consumer API endpoints - accessible to all authenticated users"""
 
 from datetime import date, datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import desc, func
+from sqlalchemy import desc, func, and_
 from sqlalchemy.orm import Session
 
 from app.dependencies import require_consumer, UserInfo
 from app.database.session import get_session
 from app.models.transaction import Transaction
 from app.models.account import Account
+from app.models.recommendation import Recommendation
+from app.models.persona import PersonaAssignment
+from app.models.computed_feature import ComputedFeature
+from app.models.decision_trace import DecisionTrace
 
 router = APIRouter(prefix="/users/me", tags=["consumer"])
 
@@ -413,6 +417,169 @@ async def get_insights(
             
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid parameter: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+# Pydantic models for recommendations API
+class EducationRecommendationResponse(BaseModel):
+    """Education recommendation response model"""
+    
+    id: str = Field(..., description="Recommendation ID")
+    title: str = Field(..., description="Recommendation title")
+    description: str = Field(..., description="Brief description (2-3 sentences)")
+    rationale: str = Field(..., description="Explanation of why this recommendation is shown")
+    category: Optional[str] = Field(None, description="Category: credit, savings, budgeting, etc.")
+    tags: List[str] = Field(default_factory=list, description="Tags (e.g., ['Credit', 'DebtManagement'])")
+    full_content: Optional[str] = Field(None, description="Full content for education item")
+    
+    class Config:
+        from_attributes = True
+
+
+class OfferRecommendationResponse(BaseModel):
+    """Offer recommendation response model"""
+    
+    id: str = Field(..., description="Recommendation ID")
+    title: str = Field(..., description="Product name")
+    description: str = Field(..., description="Brief description")
+    rationale: str = Field(..., description="Explanation of why this offer is shown")
+    eligibility: str = Field(..., description="Eligibility status: 'eligible' or 'requirements_not_met'")
+    partner_logo_url: Optional[str] = Field(None, description="Partner logo URL (S3 URL)")
+    
+    class Config:
+        from_attributes = True
+
+
+class RecommendationsResponse(BaseModel):
+    """Response model for recommendations endpoint"""
+    
+    data: dict = Field(..., description="Response data")
+    meta: dict = Field(..., description="Response metadata")
+
+
+@router.get("/recommendations", response_model=RecommendationsResponse)
+async def get_recommendations(
+    current_user: UserInfo = Depends(require_consumer),
+) -> dict:
+    """
+    Get current user's personalized education and offer recommendations
+    
+    Returns:
+        Recommendations response with education and offers arrays
+    """
+    try:
+        user_id = UUID(current_user.user_id)
+        
+        with get_session() as session:
+            # Task 2: Query user's persona from persona_assignments (30-day window)
+            thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+            persona_assignment = session.query(PersonaAssignment).filter(
+                PersonaAssignment.user_id == user_id,
+                PersonaAssignment.time_window == "30d",
+                PersonaAssignment.assigned_at >= thirty_days_ago
+            ).order_by(
+                desc(PersonaAssignment.assigned_at)
+            ).first()
+            
+            persona = persona_assignment.persona if persona_assignment else None
+            
+            # Task 3: Query user's behavioral signals from computed_features
+            computed_features = session.query(ComputedFeature).filter(
+                ComputedFeature.user_id == user_id,
+                ComputedFeature.time_window == "30d"
+            ).all()
+            
+            # Task 4: Query recommendations from recommendations table
+            # Filter by user_id and separate by type
+            all_recommendations = session.query(Recommendation).filter(
+                Recommendation.user_id == user_id
+            ).order_by(
+                desc(Recommendation.created_at)  # Sort by newest first
+            ).all()
+            
+            # Separate education and offers
+            education_recommendations = [r for r in all_recommendations if r.type == "education"]
+            offer_recommendations = [r for r in all_recommendations if r.type == "offer"]
+            
+            # Task 5: Join with decision_traces for rationale (using left join)
+            # Query decision traces for all recommendations
+            recommendation_ids = [r.id for r in all_recommendations]
+            decision_traces = {}
+            if recommendation_ids:
+                traces = session.query(DecisionTrace).filter(
+                    DecisionTrace.recommendation_id.in_(recommendation_ids)
+                ).all()
+                decision_traces = {trace.recommendation_id: trace for trace in traces}
+            
+            # Task 6: Format education recommendations response
+            education_list = []
+            for rec in education_recommendations[:5]:  # Limit to 5
+                trace = decision_traces.get(rec.id)
+                trace_data = trace.trace_data if trace and trace.trace_data else {}
+                
+                # Extract fields from trace_data or use defaults
+                description = trace_data.get("description", rec.title) if isinstance(trace_data, dict) else rec.title
+                category = trace_data.get("category") if isinstance(trace_data, dict) else None
+                tags = trace_data.get("tags", []) if isinstance(trace_data, dict) else []
+                full_content = trace_data.get("full_content") if isinstance(trace_data, dict) else None
+                
+                education_list.append({
+                    "id": str(rec.id),
+                    "title": rec.title,
+                    "description": description,
+                    "rationale": rec.rationale,
+                    "category": category,
+                    "tags": tags if isinstance(tags, list) else [],
+                    "full_content": full_content,
+                    "_sort_key": rec.created_at.isoformat() if rec.created_at else ""
+                })
+            
+            # Task 7: Format offers recommendations response
+            offers_list = []
+            for rec in offer_recommendations[:3]:  # Limit to 3
+                trace = decision_traces.get(rec.id)
+                trace_data = trace.trace_data if trace and trace.trace_data else {}
+                
+                # Extract fields from trace_data or use defaults
+                description = trace_data.get("description", rec.title) if isinstance(trace_data, dict) else rec.title
+                eligibility = trace_data.get("eligibility", "eligible") if isinstance(trace_data, dict) else "eligible"
+                partner_logo_url = trace_data.get("partner_logo_url") if isinstance(trace_data, dict) else None
+                
+                offers_list.append({
+                    "id": str(rec.id),
+                    "title": rec.title,
+                    "description": description,
+                    "rationale": rec.rationale,
+                    "eligibility": eligibility,
+                    "partner_logo_url": partner_logo_url,
+                    "_sort_key": rec.created_at.isoformat() if rec.created_at else ""
+                })
+            
+            # Task 8: Sort recommendations by priority (newest first)
+            education_list.sort(key=lambda x: x.get("_sort_key", ""), reverse=True)
+            offers_list.sort(key=lambda x: x.get("_sort_key", ""), reverse=True)
+            
+            # Remove sorting helper field
+            for item in education_list:
+                item.pop("_sort_key", None)
+            for item in offers_list:
+                item.pop("_sort_key", None)
+            
+            # Task 9: Handle empty state (already handled - empty arrays if no recommendations)
+            
+            # Build response
+            return {
+                "data": {
+                    "education": education_list,
+                    "offers": offers_list
+                },
+                "meta": {
+                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                    "persona": persona
+                }
+            }
+            
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 

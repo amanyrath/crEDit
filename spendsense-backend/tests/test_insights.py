@@ -111,19 +111,19 @@ class TestInsightsEndpoint:
     """Test insights API endpoint"""
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_without_auth(self, mock_get_current_user, mock_get_session, client):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_without_auth(self, mock_require_consumer, mock_get_session, client):
         """Test endpoint without authentication returns 401"""
-        mock_get_current_user.side_effect = Exception("Unauthorized")
+        mock_require_consumer.side_effect = Exception("Unauthorized")
         
         response = client.get("/api/v1/users/me/insights")
         assert response.status_code == 401
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_default_period(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_default_period(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test endpoint with default period (30d)"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         # Mock database session
         mock_session = Mock(spec=Session)
@@ -163,10 +163,10 @@ class TestInsightsEndpoint:
         assert data["meta"]["period"] == "30d"
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_90d_period(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_90d_period(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test endpoint with 90d period"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
@@ -199,10 +199,10 @@ class TestInsightsEndpoint:
         data = response.json()
         assert data["meta"]["period"] == "90d"
     
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_invalid_period(self, mock_get_current_user, client, mock_consumer_user):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_invalid_period(self, mock_require_consumer, client, mock_consumer_user):
         """Test endpoint with invalid period parameter"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         response = client.get(
             "/api/v1/users/me/insights",
@@ -214,10 +214,10 @@ class TestInsightsEndpoint:
         assert "Period must be '30d' or '90d'" in response.json()["detail"]
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_with_credit_accounts(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions, mock_credit_account):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_with_credit_accounts(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions, mock_credit_account):
         """Test endpoint with credit card accounts"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
@@ -260,10 +260,10 @@ class TestInsightsEndpoint:
         assert len(data["data"]["charts"]["credit_utilization"]) > 0
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_empty_transactions(self, mock_get_current_user, mock_get_session, client, mock_consumer_user):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_empty_transactions(self, mock_require_consumer, mock_get_session, client, mock_consumer_user):
         """Test endpoint with no transactions"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
@@ -296,10 +296,10 @@ class TestInsightsEndpoint:
         assert data["data"]["charts"]["credit_utilization"] == []
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_response_structure(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_response_structure(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test response structure matches specification"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
@@ -360,10 +360,10 @@ class TestInsightsEndpoint:
         assert "end_date" in meta
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.get_current_user')
-    def test_get_insights_subscription_detection(self, mock_get_current_user, mock_get_session, client, mock_consumer_user, mock_transactions):
+    @patch('app.dependencies.require_consumer')
+    def test_get_insights_subscription_detection(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test subscription detection logic"""
-        mock_get_current_user.return_value = mock_consumer_user
+        mock_require_consumer.return_value = mock_consumer_user
         
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
