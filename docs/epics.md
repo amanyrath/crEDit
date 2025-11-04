@@ -420,7 +420,42 @@ so that only authorized users can access the platform.
 
 ---
 
-### Story 2.3: Implement JWT Token Validation (Backend)
+### Story 2.3: Create Sign-Up Form Component
+
+As a consumer,
+I want to create a new account with my email and password,
+so that I can access the SpendSense platform and start managing my finances.
+
+**Acceptance Criteria:**
+1. Sign-up form component created (`SignUpForm.tsx`)
+2. Form has email, password, and confirm password input fields
+3. Form validation: email format, password meets Cognito policy (min 8 chars, uppercase, lowercase, digit, symbol), passwords match
+4. Real-time password strength indicator
+5. Error messages displayed for invalid inputs
+6. Loading state shown during sign-up process
+7. Form uses shadcn/ui Input and Button components
+8. Form is accessible (keyboard navigation, screen reader support)
+9. Form styled with Tailwind CSS
+10. Link to login page ("Already have an account? Sign in")
+11. Sign-up function calls Cognito `signUp()` API
+12. Success message displayed after successful sign-up
+13. Automatic sign-in after successful sign-up (since email verification is disabled)
+14. Error handling for sign-up failures (email already exists, weak password, etc.)
+15. Redirect to dashboard after successful sign-up and sign-in
+16. New users automatically assigned to "consumers" group
+
+**Prerequisites:** Stories 1.1, 1.5, 2.2 (frontend project, Cognito, and auth integration exist)
+
+**Technical Notes:**
+- Use AWS Amplify `signUp()` for user registration
+- Password policy: min 8 chars, uppercase, lowercase, digit, symbol
+- Email verification is disabled in Cognito (users can sign in immediately)
+- Assign new users to "consumers" group (may require backend API call)
+- Follow same patterns as LoginForm component
+
+---
+
+### Story 2.4: Implement JWT Token Validation (Backend)
 
 As a developer,
 I want to validate JWT tokens from Cognito on the backend,
@@ -447,7 +482,7 @@ so that only authenticated users can access protected API endpoints.
 
 ---
 
-### Story 2.4: Implement Role-Based Access Control
+### Story 2.5: Implement Role-Based Access Control
 
 As an operator,
 I want to access operator-specific features,
@@ -465,7 +500,7 @@ so that I can audit recommendations and monitor users.
 7. Frontend routes protected based on user role
 8. Operator dashboard only accessible to operators
 
-**Prerequisites:** Story 2.3 (JWT validation working)
+**Prerequisites:** Story 2.4 (JWT validation working)
 
 **Technical Notes:**
 - Use Cognito user groups to assign roles
@@ -475,7 +510,7 @@ so that I can audit recommendations and monitor users.
 
 ---
 
-### Story 2.5: Create Consent Modal Component
+### Story 2.6: Create Consent Modal Component
 
 As a consumer,
 I want to understand what data will be used before granting consent,

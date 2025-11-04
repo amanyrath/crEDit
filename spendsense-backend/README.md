@@ -213,7 +213,73 @@ Once the server is running, interactive API documentation is available at:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
-## Development
+## Role-Based Access Control (RBAC)
+
+The backend implements role-based access control using AWS Cognito JWT tokens. Roles are extracted from Cognito user groups or custom attributes.
+
+### Roles
+
+- **consumer**: Regular users who can access consumer endpoints
+- **operator**: Admin users who can access both consumer and operator endpoints
+
+### Using Role-Based Dependencies
+
+#### Consumer Endpoints
+
+Consumer endpoints allow all authenticated users (consumers and operators):
+
+```python
+from fastapi import Depends
+from app.dependencies import require_consumer, UserInfo
+
+@router.get("/users/me/profile")
+async def get_profile(current_user: UserInfo = Depends(require_consumer)):
+    return {"user_id": current_user.user_id, "role": current_user.role}
+```
+
+#### Operator Endpoints
+
+Operator endpoints require the operator role:
+
+```python
+from fastapi import Depends
+from app.dependencies import require_operator, UserInfo
+
+@router.get("/operator/users")
+async def list_users(current_user: UserInfo = Depends(require_operator)):
+    return {"users": []}
+```
+
+#### Custom Role Requirements
+
+Use `require_role()` for custom role requirements:
+
+```python
+from fastapi import Depends
+from app.dependencies import require_role, UserInfo
+
+@router.get("/custom-endpoint")
+async def custom_endpoint(current_user: UserInfo = Depends(require_role("consumer"))):
+    return {"message": "Custom endpoint"}
+```
+
+### Role Extraction
+
+Roles are extracted from JWT tokens in this priority order:
+
+1. `cognito:groups` claim - if "operators" group present → "operator"
+2. `cognito:groups` claim - if "consumers" group present → "consumer"
+3. `custom:role` claim - use value if present
+4. Default to "consumer" if no role information found
+
+### Error Responses
+
+- **401 Unauthorized**: Missing or invalid JWT token
+- **403 Forbidden**: Valid token but insufficient role permissions
+
+### Testing RBAC
+
+See `tests/test_rbac.py` for examples of testing role-based endpoints with mocked tokens.
 
 - **Formatting**: Black (to be configured)
 - **Linting**: Ruff (to be configured)

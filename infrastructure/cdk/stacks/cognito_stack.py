@@ -1,10 +1,13 @@
 """
 Cognito Stack - User Pool, Groups, and Secrets Manager
 """
+import os
 from aws_cdk import (
     Stack,
     aws_cognito as cognito,
     aws_secretsmanager as secretsmanager,
+    aws_lambda as lambda_,
+    aws_iam as iam,
     RemovalPolicy,
     Duration,
     CfnOutput,
@@ -108,6 +111,65 @@ class CognitoStack(Stack):
         # Update the secret with actual values after stack creation
         # Note: This will be updated via a script or custom resource after deployment
         # For now, we'll document the manual update process
+
+        # Create Post-Confirmation Lambda function
+        # This Lambda assigns new users to the "consumers" group automatically
+        env_name = self.node.try_get_context("environment") or "dev"
+        region = self.node.try_get_context("region") or os.getenv("AWS_REGION", "us-east-1")
+        
+        post_confirmation_lambda_role = iam.Role(
+            self,
+            "PostConfirmationLambdaRole",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            description="IAM role for Cognito Post-Confirmation Lambda trigger",
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name(
+                    "service-role/AWSLambdaBasicExecutionRole"
+                ),
+            ],
+        )
+
+        # Grant permissions to add users to groups
+        post_confirmation_lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=[
+                    "cognito-idp:AdminAddUserToGroup",
+                ],
+                resources=[user_pool.user_pool_arn],
+            )
+        )
+
+        # Grant Secrets Manager read permissions
+        post_confirmation_lambda_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["secretsmanager:GetSecretValue"],
+                resources=[cognito_config_secret.secret_arn],
+            )
+        )
+
+        post_confirmation_lambda = lambda_.Function(
+            self,
+            "PostConfirmationLambda",
+            runtime=lambda_.Runtime.PYTHON_3_11,
+            handler="lambdas.post_confirmation.handler",
+            code=lambda_.Code.from_asset("../../spendsense-backend"),
+            timeout=Duration.seconds(30),
+            memory_size=256,
+            role=post_confirmation_lambda_role,
+            environment={
+                "COGNITO_SECRET_NAME": "spendsense/cognito/configuration",
+                "AWS_REGION": region,
+            },
+            description="Cognito Post-Confirmation trigger that assigns users to consumers group",
+        )
+
+        # Add Post-Confirmation trigger to User Pool
+        user_pool.add_trigger(
+            cognito.UserPoolOperation.POST_CONFIRMATION,
+            post_confirmation_lambda
+        )
 
         # Outputs
         CfnOutput(

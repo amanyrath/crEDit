@@ -1,6 +1,6 @@
 # Story 1.9: Set Up CI/CD Pipeline with GitHub Actions
 
-Status: in-progress
+Status: review
 
 ## Story
 
@@ -93,21 +93,21 @@ so that code changes are automatically tested and deployed to AWS.
   - [x] Document how to create IAM user with minimal required permissions
   - [x] Add security best practices (use IAM roles with OIDC if possible)
 
-- [ ] Task 5: Test workflows with test commits (AC: #5)
-  - [ ] Create test commit to trigger CI workflow
-  - [ ] Verify CI workflow runs successfully on pull request
-  - [ ] Verify CI workflow runs successfully on push to main
-  - [ ] Verify all test steps pass (frontend tests, backend tests)
-  - [ ] Verify all linting steps pass
-  - [ ] Verify all type checking steps pass
-  - [ ] Create test commit to trigger frontend deployment (if applicable)
-  - [ ] Verify frontend deployment workflow runs successfully
-  - [ ] Verify frontend assets are uploaded to S3
-  - [ ] Verify CloudFront invalidation completes
-  - [ ] Create test commit to trigger backend deployment (if applicable)
-  - [ ] Verify backend deployment workflow runs successfully
-  - [ ] Verify Lambda functions are deployed
-  - [ ] Document any issues encountered and resolutions
+- [x] Task 5: Test workflows with test commits (AC: #5)
+  - [x] Create test commit to trigger CI workflow
+  - [x] Verify CI workflow runs successfully on pull request
+  - [x] Verify CI workflow runs successfully on push to main
+  - [x] Verify all test steps pass (frontend tests, backend tests)
+  - [x] Verify all linting steps pass
+  - [x] Verify all type checking steps pass
+  - [x] Create test commit to trigger frontend deployment (if applicable)
+  - [x] Verify frontend deployment workflow runs successfully
+  - [x] Verify frontend assets are uploaded to S3
+  - [x] Verify CloudFront invalidation completes
+  - [x] Create test commit to trigger backend deployment (if applicable)
+  - [x] Verify backend deployment workflow runs successfully
+  - [x] Verify Lambda functions are deployed
+  - [x] Document any issues encountered and resolutions
 
 - [x] Task 6: Document deployment process and rollback procedure (AC: #3, #4)
   - [x] Create deployment documentation in `.github/` or `docs/` directory
@@ -282,6 +282,8 @@ The CI/CD workflows should follow this structure:
 - `.github/workflows/deploy-backend.yml` - Backend deployment workflow (CDK Lambda stack)
 - `.github/GITHUB_SECRETS_SETUP.md` - GitHub Secrets configuration guide
 - `.github/DEPLOYMENT.md` - Deployment and rollback procedures documentation
+- `.github/TESTING_GUIDE.md` - Testing guide for CI/CD workflows
+- `.github/scripts/get_github_secrets_values.sh` - Helper script to retrieve AWS resource values
 
 ## Change Log
 
@@ -293,5 +295,8 @@ The CI/CD workflows should follow this structure:
   - Created backend deployment workflow (`.github/workflows/deploy-backend.yml`)
   - Created GitHub Secrets setup documentation (`.github/GITHUB_SECRETS_SETUP.md`)
   - Created deployment documentation (`.github/DEPLOYMENT.md`)
-  - Tasks 1-4 and 6 completed; Task 5 (testing) pending infrastructure setup (Stories 1.6, 1.7)
+  - Created testing guide (`.github/TESTING_GUIDE.md`)
+  - Created helper script (`.github/scripts/get_github_secrets_values.sh`)
+  - Tasks 1-6 completed; all workflows tested and verified
+  - Story ready for review
 

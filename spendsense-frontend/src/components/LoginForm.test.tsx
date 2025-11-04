@@ -1,24 +1,58 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { BrowserRouter } from 'react-router-dom'
 import { LoginForm } from './LoginForm'
+import { AuthProvider } from '@/contexts/AuthContext'
+import { signIn, getCurrentUser, fetchAuthSession } from '@aws-amplify/auth'
+
+// Mock Amplify Auth
+vi.mock('@aws-amplify/auth', () => ({
+  signIn: vi.fn(),
+  signOut: vi.fn(),
+  getCurrentUser: vi.fn(),
+  fetchAuthSession: vi.fn(),
+}))
+
+// Test wrapper component
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        {children}
+      </AuthProvider>
+    </BrowserRouter>
+  )
+}
+
+// Helper to render and wait for form to be ready
+const renderLoginForm = async (props?: { onSubmit?: (data: { email: string; password: string }) => Promise<void> | void }) => {
+  const result = render(<LoginForm {...props} />, { wrapper: TestWrapper })
+  await waitFor(() => {
+    expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
+  }, { timeout: 2000 })
+  return result
+}
 
 describe('LoginForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Mock getCurrentUser to return "not authenticated" by default
+    vi.mocked(getCurrentUser).mockRejectedValue(new Error('Not authenticated'))
+    vi.mocked(fetchAuthSession).mockResolvedValue({ tokens: null } as any)
   })
 
   describe('Form Rendering', () => {
-    it('renders email and password input fields', () => {
-      render(<LoginForm />)
+    it('renders email and password input fields', async () => {
+      await renderLoginForm()
       
       expect(screen.getByLabelText(/email/i)).toBeInTheDocument()
       expect(screen.getByLabelText(/password/i)).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /log in/i })).toBeInTheDocument()
     })
 
-    it('renders with proper labels', () => {
-      render(<LoginForm />)
+    it('renders with proper labels', async () => {
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -27,8 +61,8 @@ describe('LoginForm', () => {
       expect(passwordInput).toHaveAttribute('type', 'password')
     })
 
-    it('renders with placeholder text', () => {
-      render(<LoginForm />)
+    it('renders with placeholder text', async () => {
+      await renderLoginForm()
       
       expect(screen.getByPlaceholderText(/enter your email/i)).toBeInTheDocument()
       expect(screen.getByPlaceholderText(/enter your password/i)).toBeInTheDocument()
@@ -38,7 +72,7 @@ describe('LoginForm', () => {
   describe('Email Validation', () => {
     it('displays error for invalid email format', async () => {
       const user = userEvent.setup()
-      render(<LoginForm />)
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -55,7 +89,7 @@ describe('LoginForm', () => {
 
     it('displays error for empty email', async () => {
       const user = userEvent.setup()
-      render(<LoginForm />)
+      await renderLoginForm()
       
       const submitButton = screen.getByRole('button', { name: /log in/i })
       await user.click(submitButton)
@@ -68,7 +102,7 @@ describe('LoginForm', () => {
     it('accepts valid email format', async () => {
       const user = userEvent.setup()
       const onSubmit = vi.fn()
-      render(<LoginForm onSubmit={onSubmit} />)
+      await renderLoginForm({ onSubmit })
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -92,7 +126,7 @@ describe('LoginForm', () => {
   describe('Password Validation', () => {
     it('displays error for empty password', async () => {
       const user = userEvent.setup()
-      render(<LoginForm />)
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const submitButton = screen.getByRole('button', { name: /log in/i })
@@ -108,7 +142,7 @@ describe('LoginForm', () => {
     it('accepts non-empty password', async () => {
       const user = userEvent.setup()
       const onSubmit = vi.fn()
-      render(<LoginForm onSubmit={onSubmit} />)
+      await renderLoginForm({ onSubmit })
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -129,7 +163,7 @@ describe('LoginForm', () => {
   describe('Error Message Display', () => {
     it('displays error messages with proper ARIA attributes', async () => {
       const user = userEvent.setup()
-      render(<LoginForm />)
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -153,7 +187,7 @@ describe('LoginForm', () => {
 
     it('clears errors when user starts typing', async () => {
       const user = userEvent.setup()
-      render(<LoginForm />)
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -182,7 +216,7 @@ describe('LoginForm', () => {
       const onSubmit = vi.fn(async () => {
         await new Promise<void>((resolve) => setTimeout(resolve, 100))
       })
-      render(<LoginForm onSubmit={onSubmit} />)
+      await renderLoginForm({ onSubmit })
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -207,7 +241,7 @@ describe('LoginForm', () => {
       const onSubmit = vi.fn(async () => {
         await new Promise<void>((resolve) => setTimeout(resolve, 100))
       })
-      render(<LoginForm onSubmit={onSubmit} />)
+      await renderLoginForm({ onSubmit })
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -229,7 +263,7 @@ describe('LoginForm', () => {
     it('calls onSubmit with form data when valid', async () => {
       const user = userEvent.setup()
       const onSubmit = vi.fn()
-      render(<LoginForm onSubmit={onSubmit} />)
+      await renderLoginForm({ onSubmit })
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -249,8 +283,29 @@ describe('LoginForm', () => {
 
     it('handles submission without onSubmit prop', async () => {
       const user = userEvent.setup()
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-      render(<LoginForm />)
+      
+      // Mock successful sign in
+      vi.mocked(signIn).mockResolvedValue({
+        isSignedIn: true,
+        nextStep: { signInStep: 'DONE' },
+      } as any)
+      
+      vi.mocked(getCurrentUser).mockResolvedValue({
+        username: 'test@example.com',
+        userId: 'user-123',
+      } as any)
+      vi.mocked(fetchAuthSession).mockResolvedValue({
+        tokens: {
+          idToken: {
+            payload: {
+              sub: 'user-123',
+              email: 'test@example.com',
+            },
+          },
+        },
+      } as any)
+      
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -261,20 +316,18 @@ describe('LoginForm', () => {
       await user.click(submitButton)
       
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalledWith('Login attempt:', {
-          email: 'test@example.com',
+        expect(signIn).toHaveBeenCalledWith({
+          username: 'test@example.com',
           password: 'password123',
         })
-      })
-      
-      consoleSpy.mockRestore()
+      }, { timeout: 3000 })
     })
   })
 
   describe('Accessibility Features', () => {
     it('supports keyboard navigation', async () => {
       const user = userEvent.setup()
-      render(<LoginForm />)
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -293,7 +346,7 @@ describe('LoginForm', () => {
     it('submits form on Enter key press', async () => {
       const user = userEvent.setup()
       const onSubmit = vi.fn()
-      render(<LoginForm onSubmit={onSubmit} />)
+      await renderLoginForm({ onSubmit })
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -307,8 +360,8 @@ describe('LoginForm', () => {
       })
     })
 
-    it('has proper ARIA labels for screen readers', () => {
-      render(<LoginForm />)
+    it('has proper ARIA labels for screen readers', async () => {
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -321,7 +374,7 @@ describe('LoginForm', () => {
 
     it('has proper ARIA attributes for error states', async () => {
       const user = userEvent.setup()
-      render(<LoginForm />)
+      await renderLoginForm()
       
       const emailInput = screen.getByLabelText(/email/i)
       const passwordInput = screen.getByLabelText(/password/i)
@@ -344,12 +397,11 @@ describe('LoginForm', () => {
   })
 
   describe('Responsive Design', () => {
-    it('has responsive width classes', () => {
-      const { container } = render(<LoginForm />)
+    it('has responsive width classes', async () => {
+      const { container } = await renderLoginForm()
       const form = container.querySelector('form')
       
       expect(form).toHaveClass('w-full', 'max-w-md')
     })
   })
 })
-

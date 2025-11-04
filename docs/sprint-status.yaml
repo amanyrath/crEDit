@@ -39,10 +39,22 @@ development_status:
   1-6-create-aws-lambda-functions-and-api-gateway: review
   1-7-create-s3-buckets-and-cloudfront-distribution: review
   1-8-set-up-eventbridge-rules-for-background-jobs: in-progress
-  1-9-set-up-cicd-pipeline-with-github-actions: in-progress
+  1-9-set-up-cicd-pipeline-with-github-actions: review
   1-10-configure-development-environment-variables: done
   epic-1-retrospective: optional
   epic-2: backlog
   2-1-create-login-form-component: review
   2-2-integrate-aws-cognito-authentication: review
+  2-3-create-sign-up-form-component: drafted
+  2-4-create-sign-up-form-component: review
+  2-5-implement-role-based-access-control: review
+  2-6-create-consent-modal-component: review
+  2-7-implement-session-management-and-token-refresh: review
+  epic-3: backlog
+  3-1-create-database-seeding-script-for-demo-data: review
+  3-4-create-insights-api-endpoint: review
+  3-2-create-transactions-api-endpoint: review
+  epic-4: backlog
+  4-1-create-rationale-box-component: review
+  4-2-create-education-card-component: in-progress
 

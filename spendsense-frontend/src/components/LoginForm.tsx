@@ -20,6 +20,7 @@ interface LoginFormProps {
 
 export function LoginForm({ onSubmit }: LoginFormProps) {
   const [authError, setAuthError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const { signIn, isLoading: authLoading } = useAuthContext()
   const navigate = useNavigate()
 
@@ -34,10 +35,11 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
     reValidateMode: 'onChange',
   })
 
-  const isLoading = authLoading
+  const isLoading = onSubmit ? isSubmitting : authLoading
 
   const onSubmitHandler = async (data: LoginFormData) => {
     setAuthError(null)
+    setIsSubmitting(true)
     try {
       if (onSubmit) {
         await onSubmit(data)
@@ -56,6 +58,8 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
       if (firstErrorField) {
         setFocus(firstErrorField as keyof LoginFormData)
       }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 

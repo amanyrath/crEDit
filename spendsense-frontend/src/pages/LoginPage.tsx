@@ -1,6 +1,6 @@
 import { LoginForm } from '@/components/LoginForm'
 import { useAuthContext } from '@/contexts/AuthContext'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Navigate, useLocation, Link } from 'react-router-dom'
 
 /**
  * Login page component
@@ -36,8 +36,19 @@ export function LoginPage() {
           <p className="text-muted-foreground">Sign in to your account</p>
         </div>
         <LoginForm />
+        <div className="text-center mt-4 text-sm text-muted-foreground">
+          Don't have an account?{' '}
+          <Link
+            to="/signup"
+            className="text-primary hover:underline font-medium"
+            aria-label="Create a new account"
+          >
+            Sign up
+          </Link>
+        </div>
       </div>
     </div>
   )
 }
+
 

@@ -38,7 +38,7 @@ so that I can access my personalized financial dashboard.
   - [x] Set up component with React Hook Form
   - [x] Add email input field using shadcn/ui Input component
   - [x] Add password input field using shadcn/ui Input component (type="password")
-  - [x] Add form submission handler (placeholder for now, will integrate with Cognito in next story)
+  - [x] Add form submission handler (integrated with Cognito authentication via useAuthContext)
 
 - [x] Task 4: Implement form validation (AC: #3, #4)
   - [x] Create zod schema for login form:
@@ -83,7 +83,7 @@ so that I can access my personalized financial dashboard.
   - [x] Create login page/route if not exists
   - [x] Import and use LoginForm component in login page
   - [x] Verify LoginForm renders correctly in application context
-  - [x] Test form submission flow (will be connected to Cognito in Story 2.2)
+  - [x] Test form submission flow (Cognito authentication integrated and working)
 
 ## Dev Notes
 
@@ -202,6 +202,9 @@ Claude Sonnet 4.5 (via Cursor)
 - **Testing**: Created comprehensive test suite with 19 tests covering all acceptance criteria - all tests passing
 - **Integration**: Integrated LoginForm into App.tsx with proper styling and layout
 - **TypeScript**: Fixed all TypeScript errors including vite.config.ts and test file type issues
+- **Cognito Integration**: Integrated AWS Cognito authentication via useAuthContext hook (extends Story 2.1 scope to include Story 2.2 functionality)
+- **Error Handling**: Added authentication error display for Cognito authentication failures
+- **Loading State**: Implemented proper loading state management for both custom onSubmit handlers and Cognito authentication
 
 ### File List
 
@@ -220,6 +223,8 @@ Claude Sonnet 4.5 (via Cursor)
 - `spendsense-frontend/tailwind.config.js` - Updated with shadcn/ui theme configuration
 - `spendsense-frontend/vite.config.ts` - Fixed to support Vitest test configuration
 - `spendsense-frontend/package.json` - Added dependencies: react-hook-form, zod, @hookform/resolvers, clsx, tailwind-merge, tailwindcss-animate, @radix-ui/react-slot, class-variance-authority, @testing-library/user-event
+
+**Note**: Story 2.1 includes Cognito authentication integration (originally planned for Story 2.2) to provide a fully functional login form. The component supports both custom onSubmit handlers and Cognito authentication via useAuthContext hook.
 
 ## Change Log
 

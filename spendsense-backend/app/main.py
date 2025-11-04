@@ -1,6 +1,7 @@
 """FastAPI application entry point"""
 
 from fastapi import FastAPI
+from app.api.v1 import consumer, operator
 
 app = FastAPI(
     title="SpendSense API",
@@ -21,4 +22,6 @@ async def root():
     return {"message": "SpendSense API"}
 
 
-
+# Register API routers
+app.include_router(consumer.router, prefix="/api/v1")
+app.include_router(operator.router, prefix="/api/v1")
