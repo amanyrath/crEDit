@@ -1,12 +1,12 @@
 """Database connection management"""
 
+import json
 import os
 from typing import Optional
 
 import boto3
 from botocore.exceptions import ClientError
 from sqlalchemy import create_engine, Engine
-from sqlalchemy.engine import URL
 
 from app.config import settings
 
@@ -18,7 +18,26 @@ def get_db_url_from_secrets_manager() -> Optional[str]:
             secrets_client = boto3.client("secretsmanager", region_name=settings.aws_region)
             secret_name = os.getenv("DATABASE_SECRET_NAME", "spendsense/database/connection")
             response = secrets_client.get_secret_value(SecretId=secret_name)
-            return response["SecretString"]
+            secret_value = response["SecretString"]
+            
+            # Try to parse as JSON (connection string secret is stored as JSON)
+            try:
+                secret_json = json.loads(secret_value)
+                # Check if connection_string field exists
+                if "connection_string" in secret_json:
+                    return secret_json["connection_string"]
+                # Otherwise, construct from individual fields
+                elif "host" in secret_json and "username" in secret_json and "password" in secret_json:
+                    host = secret_json["host"]
+                    port = secret_json.get("port", "5432")
+                    database = secret_json.get("database", "spendsense")
+                    username = secret_json["username"]
+                    password = secret_json["password"]
+                    return f"postgresql://{username}:{password}@{host}:{port}/{database}"
+            except json.JSONDecodeError:
+                # If not JSON, assume it's a plain connection string
+                return secret_value
+                
         except ClientError as e:
             print(f"Error retrieving database secret: {e}")
             return None
