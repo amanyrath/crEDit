@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { Amplify } from '@aws-amplify/core'
 
@@ -22,10 +23,10 @@ describe('Amplify Configuration', () => {
   it('should configure Amplify with Cognito settings', async () => {
     // Dynamically import to trigger configuration
     const { configureAmplify } = await import('./amplify')
-    
+
     // Verify configuration was called
     expect(configureAmplify).toBeDefined()
-    
+
     // Verify Amplify is configured
     const config = Amplify.getConfig()
     expect(config.Auth?.Cognito?.userPoolId).toBe(mockEnv.VITE_COGNITO_USER_POOL_ID)
@@ -39,7 +40,7 @@ describe('Amplify Configuration', () => {
     await expect(async () => {
       await import('./amplify')
     }).rejects.toThrow('Missing required Cognito configuration')
-    
+
     // Restore
     Object.assign(mockEnv, originalEnv)
   })
@@ -51,11 +52,8 @@ describe('Amplify Configuration', () => {
     await expect(async () => {
       await import('./amplify')
     }).rejects.toThrow('Missing required Cognito configuration')
-    
+
     // Restore
     Object.assign(mockEnv, originalEnv)
   })
 })
-
-
-

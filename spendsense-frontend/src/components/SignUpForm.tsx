@@ -1,25 +1,28 @@
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { useState, useEffect } from "react"
-import { useAuthContext } from "@/contexts/AuthContext"
-import { useNavigate, Link } from "react-router-dom"
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { useState, useEffect } from 'react'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useNavigate, Link } from 'react-router-dom'
 
-const signUpSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain an uppercase letter")
-    .regex(/[a-z]/, "Password must contain a lowercase letter")
-    .regex(/[0-9]/, "Password must contain a digit")
-    .regex(/[^A-Za-z0-9]/, "Password must contain a special character"),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"]
-})
+const signUpSchema = z
+  .object({
+    email: z.string().email('Invalid email address'),
+    password: z
+      .string()
+      .min(8, 'Password must be at least 8 characters')
+      .regex(/[A-Z]/, 'Password must contain an uppercase letter')
+      .regex(/[a-z]/, 'Password must contain a lowercase letter')
+      .regex(/[0-9]/, 'Password must contain a digit')
+      .regex(/[^A-Za-z0-9]/, 'Password must contain a special character'),
+    confirmPassword: z.string(),
+  })
+  .refine(data => data.password === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  })
 
 type SignUpFormData = z.infer<typeof signUpSchema>
 
@@ -39,7 +42,7 @@ interface PasswordRequirements {
 
 function getPasswordStrength(password: string): PasswordStrength {
   if (!password) return 'none'
-  
+
   const requirements: PasswordRequirements = {
     length: password.length >= 8,
     uppercase: /[A-Z]/.test(password),
@@ -47,9 +50,9 @@ function getPasswordStrength(password: string): PasswordStrength {
     digit: /[0-9]/.test(password),
     symbol: /[^A-Za-z0-9]/.test(password),
   }
-  
+
   const metCount = Object.values(requirements).filter(Boolean).length
-  
+
   if (metCount < 3) return 'weak'
   if (metCount < 5) return 'medium'
   return 'strong'
@@ -86,13 +89,15 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
 
   const password = watch('password')
   const passwordStrength = password ? getPasswordStrength(password) : 'none'
-  const passwordRequirements = password ? getPasswordRequirements(password) : {
-    length: false,
-    uppercase: false,
-    lowercase: false,
-    digit: false,
-    symbol: false,
-  }
+  const passwordRequirements = password
+    ? getPasswordRequirements(password)
+    : {
+        length: false,
+        uppercase: false,
+        lowercase: false,
+        digit: false,
+        symbol: false,
+      }
 
   const isLoading = onSubmit ? isSubmitting : authLoading
 
@@ -113,11 +118,18 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
         }, 1000)
       }
     } catch (error) {
-      console.error("Sign up error:", error)
-      const errorMessage = error instanceof Error ? error.message : "Sign up failed. Please try again."
+      console.error('Sign up error:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Sign up failed. Please try again.'
       setAuthError(errorMessage)
       // Focus on first error field after submission error
-      const firstErrorField = errors.email ? "email" : errors.password ? "password" : errors.confirmPassword ? "confirmPassword" : null
+      const firstErrorField = errors.email
+        ? 'email'
+        : errors.password
+          ? 'password'
+          : errors.confirmPassword
+            ? 'confirmPassword'
+            : null
       if (firstErrorField) {
         setFocus(firstErrorField as keyof SignUpFormData)
       }
@@ -139,46 +151,47 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)} noValidate className="space-y-4 w-full max-w-md">
       <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label
+          htmlFor="email"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
           Email
         </label>
         <Input
           id="email"
           type="email"
           placeholder="Enter your email"
-          {...register("email")}
+          {...register('email')}
           disabled={isLoading}
           aria-label="Email address"
-          aria-describedby={errors.email ? "email-error" : undefined}
+          aria-describedby={errors.email ? 'email-error' : undefined}
           aria-invalid={!!errors.email}
-          className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
+          className={errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
         />
         {errors.email && (
-          <p
-            id="email-error"
-            role="alert"
-            className="text-sm text-destructive"
-            aria-live="polite"
-          >
+          <p id="email-error" role="alert" className="text-sm text-destructive" aria-live="polite">
             {errors.email.message}
           </p>
         )}
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label
+          htmlFor="password"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
           Password
         </label>
         <Input
           id="password"
           type="password"
           placeholder="Enter your password"
-          {...register("password")}
+          {...register('password')}
           disabled={isLoading}
           aria-label="Password"
-          aria-describedby={errors.password ? "password-error" : undefined}
+          aria-describedby={errors.password ? 'password-error' : undefined}
           aria-invalid={!!errors.password}
-          className={errors.password ? "border-destructive focus-visible:ring-destructive" : ""}
+          className={errors.password ? 'border-destructive focus-visible:ring-destructive' : ''}
         />
         {errors.password && (
           <p
@@ -190,7 +203,7 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
             {errors.password.message}
           </p>
         )}
-        
+
         {/* Password Strength Indicator */}
         {password && passwordStrength !== 'none' && (
           <div className="space-y-1">
@@ -198,25 +211,24 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
               <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 ${
-                    passwordStrength === 'weak' ? 'bg-destructive w-1/3' :
-                    passwordStrength === 'medium' ? 'bg-yellow-500 w-2/3' :
-                    'bg-green-500 w-full'
+                    passwordStrength === 'weak'
+                      ? 'bg-destructive w-1/3'
+                      : passwordStrength === 'medium'
+                        ? 'bg-yellow-500 w-2/3'
+                        : 'bg-green-500 w-full'
                   }`}
                   role="progressbar"
                   aria-valuenow={
-                    passwordStrength === 'weak' ? 33 :
-                    passwordStrength === 'medium' ? 66 : 100
+                    passwordStrength === 'weak' ? 33 : passwordStrength === 'medium' ? 66 : 100
                   }
                   aria-valuemin={0}
                   aria-valuemax={100}
                   aria-label={`Password strength: ${passwordStrength}`}
                 />
               </div>
-              <span className="text-xs text-muted-foreground capitalize">
-                {passwordStrength}
-              </span>
+              <span className="text-xs text-muted-foreground capitalize">{passwordStrength}</span>
             </div>
-            
+
             {/* Password Requirements */}
             <div className="text-xs text-muted-foreground space-y-0.5">
               <div className={passwordRequirements.length ? 'text-green-600' : ''}>
@@ -240,19 +252,24 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="confirmPassword" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label
+          htmlFor="confirmPassword"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
           Confirm Password
         </label>
         <Input
           id="confirmPassword"
           type="password"
           placeholder="Confirm your password"
-          {...register("confirmPassword")}
+          {...register('confirmPassword')}
           disabled={isLoading}
           aria-label="Confirm password"
-          aria-describedby={errors.confirmPassword ? "confirmPassword-error" : undefined}
+          aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
           aria-invalid={!!errors.confirmPassword}
-          className={errors.confirmPassword ? "border-destructive focus-visible:ring-destructive" : ""}
+          className={
+            errors.confirmPassword ? 'border-destructive focus-visible:ring-destructive' : ''
+          }
         />
         {errors.confirmPassword && (
           <p
@@ -290,9 +307,9 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
         type="submit"
         disabled={isLoading}
         className="w-full"
-        aria-label={isLoading ? "Creating account..." : "Sign up"}
+        aria-label={isLoading ? 'Creating account...' : 'Sign up'}
       >
-        {isLoading ? "Creating account..." : "Sign up"}
+        {isLoading ? 'Creating account...' : 'Sign up'}
       </Button>
 
       <div className="text-center text-sm text-muted-foreground">
@@ -308,5 +325,3 @@ export function SignUpForm({ onSubmit }: SignUpFormProps) {
     </form>
   )
 }
-
-

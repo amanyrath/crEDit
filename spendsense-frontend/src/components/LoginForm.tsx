@@ -1,15 +1,15 @@
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
-import { useAuthContext } from "@/contexts/AuthContext"
-import { useNavigate } from "react-router-dom"
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { useAuthContext } from '@/contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(1, "Password is required"),
+  email: z.string().email('Invalid email address'),
+  password: z.string().min(1, 'Password is required'),
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
@@ -50,11 +50,12 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         navigate('/dashboard', { replace: true })
       }
     } catch (error) {
-      console.error("Login error:", error)
-      const errorMessage = error instanceof Error ? error.message : "Login failed. Please try again."
+      console.error('Login error:', error)
+      const errorMessage =
+        error instanceof Error ? error.message : 'Login failed. Please try again.'
       setAuthError(errorMessage)
       // Focus on first error field after submission error
-      const firstErrorField = errors.email ? "email" : errors.password ? "password" : null
+      const firstErrorField = errors.email ? 'email' : errors.password ? 'password' : null
       if (firstErrorField) {
         setFocus(firstErrorField as keyof LoginFormData)
       }
@@ -66,46 +67,47 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmitHandler)} noValidate className="space-y-4 w-full max-w-md">
       <div className="space-y-2">
-        <label htmlFor="email" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label
+          htmlFor="email"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
           Email
         </label>
         <Input
           id="email"
           type="email"
           placeholder="Enter your email"
-          {...register("email")}
+          {...register('email')}
           disabled={isLoading}
           aria-label="Email address"
-          aria-describedby={errors.email ? "email-error" : undefined}
+          aria-describedby={errors.email ? 'email-error' : undefined}
           aria-invalid={!!errors.email}
-          className={errors.email ? "border-destructive focus-visible:ring-destructive" : ""}
+          className={errors.email ? 'border-destructive focus-visible:ring-destructive' : ''}
         />
         {errors.email && (
-          <p
-            id="email-error"
-            role="alert"
-            className="text-sm text-destructive"
-            aria-live="polite"
-          >
+          <p id="email-error" role="alert" className="text-sm text-destructive" aria-live="polite">
             {errors.email.message}
           </p>
         )}
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="password" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+        <label
+          htmlFor="password"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
           Password
         </label>
         <Input
           id="password"
           type="password"
           placeholder="Enter your password"
-          {...register("password")}
+          {...register('password')}
           disabled={isLoading}
           aria-label="Password"
-          aria-describedby={errors.password ? "password-error" : undefined}
+          aria-describedby={errors.password ? 'password-error' : undefined}
           aria-invalid={!!errors.password}
-          className={errors.password ? "border-destructive focus-visible:ring-destructive" : ""}
+          className={errors.password ? 'border-destructive focus-visible:ring-destructive' : ''}
         />
         {errors.password && (
           <p
@@ -132,11 +134,10 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
         type="submit"
         disabled={isLoading}
         className="w-full"
-        aria-label={isLoading ? "Logging in..." : "Log in"}
+        aria-label={isLoading ? 'Logging in...' : 'Log in'}
       >
-        {isLoading ? "Logging in..." : "Log in"}
+        {isLoading ? 'Logging in...' : 'Log in'}
       </Button>
     </form>
   )
 }
-

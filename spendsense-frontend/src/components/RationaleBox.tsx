@@ -16,7 +16,7 @@ export interface RationaleBoxProps {
  * RationaleBox component
  * Displays a highlighted box explaining why specific content is shown to the user.
  * Used in education cards and offers to provide transparency about recommendations.
- * 
+ *
  * Visual styling:
  * - Light blue background (#eff6ff)
  * - Left border accent (#1e40af)
@@ -36,13 +36,10 @@ export function RationaleBox({ content, className }: RationaleBoxProps) {
       aria-label="Why we're showing this"
       aria-describedby="rationale-content"
     >
-      <div className="font-semibold text-gray-900 mb-2">
-        Why we're showing this
-      </div>
+      <div className="font-semibold text-gray-900 mb-2">Why we're showing this</div>
       <div id="rationale-content" className="text-gray-700">
         {content}
       </div>
     </div>
   )
 }
-

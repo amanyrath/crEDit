@@ -19,7 +19,7 @@ export interface UseAuthReturn {
   signUp: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   getCurrentSession: () => Promise<{ tokens: { accessToken: { toString: () => string } } } | null>
-  refreshSession: () => Promise<void>
+  refreshSession: () => Promise<boolean>
 }
 
 /**
@@ -42,11 +42,14 @@ export function useAuth(): UseAuthReturn {
   /**
    * Get token expiration time in milliseconds
    */
-  const getTokenExpirationTime = useCallback((token: { payload?: { exp?: number } }): number | null => {
-    if (!token.payload?.exp) return null
-    // exp is in seconds, convert to milliseconds
-    return token.payload.exp * 1000
-  }, [])
+  const getTokenExpirationTime = useCallback(
+    (token: { payload?: { exp?: number } }): number | null => {
+      if (!token.payload?.exp) return null
+      // exp is in seconds, convert to milliseconds
+      return token.payload.exp * 1000
+    },
+    []
+  )
 
   /**
    * Check if token needs refresh (within 5 minutes of expiration)
@@ -73,13 +76,13 @@ export function useAuth(): UseAuthReturn {
         return 'consumer'
       }
     }
-    
+
     // Fallback to custom:role claim
     const customRole = claims['custom:role'] as string | undefined
     if (customRole && (customRole === 'consumer' || customRole === 'operator')) {
       return customRole
     }
-    
+
     // Default to consumer
     return 'consumer'
   }
@@ -91,19 +94,19 @@ export function useAuth(): UseAuthReturn {
     try {
       // Get current user to check if authenticated
       const currentUser = await getCurrentUser()
-      
+
       // Fetch auth session to get tokens (without force refresh to check expiration)
       const session = await fetchAuthSession({ forceRefresh: false })
-      
+
       if (session.tokens && session.tokens.idToken && session.tokens.accessToken) {
-        const payload = session.tokens.idToken.payload as unknown as { 
+        const payload = session.tokens.idToken.payload as unknown as {
           email?: string
           sub: string
           'cognito:groups'?: string[]
           'custom:role'?: string
-          [key: string]: unknown 
+          [key: string]: unknown
         }
-        
+
         // Extract role from access token (access token has groups claim)
         let role = 'consumer'
         if (session.tokens.accessToken) {
@@ -119,7 +122,7 @@ export function useAuth(): UseAuthReturn {
           // Fallback to ID token
           role = extractRoleFromClaims(payload)
         }
-        
+
         const authUser: AuthUser = {
           username: currentUser.username || payload.email || payload.sub,
           email: payload.email,
@@ -129,18 +132,25 @@ export function useAuth(): UseAuthReturn {
         setUser(authUser)
         setIsAuthenticated(true)
         setError(null)
-        
+
         // Notify other tabs of login
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ authenticated: true, timestamp: Date.now() }))
+        localStorage.setItem(
+          AUTH_STORAGE_KEY,
+          JSON.stringify({ authenticated: true, timestamp: Date.now() })
+        )
         window.dispatchEvent(new CustomEvent(AUTH_LOGIN_EVENT))
-        
-        return { tokens: { accessToken: { toString: () => session.tokens?.accessToken?.toString() || '' } } }
+
+        return {
+          tokens: {
+            accessToken: { toString: () => session.tokens?.accessToken?.toString() || '' },
+          },
+        }
       }
-      
+
       setUser(null)
       setIsAuthenticated(false)
       return null
-    } catch (err) {
+    } catch {
       // No active session
       setUser(null)
       setIsAuthenticated(false)
@@ -156,17 +166,17 @@ export function useAuth(): UseAuthReturn {
     try {
       // Force refresh to use refresh token
       const session = await fetchAuthSession({ forceRefresh: true })
-      
+
       if (session.tokens && session.tokens.idToken) {
         const currentUser = await getCurrentUser()
-        const payload = session.tokens.idToken.payload as unknown as { 
+        const payload = session.tokens.idToken.payload as unknown as {
           email?: string
           sub: string
           'cognito:groups'?: string[]
           'custom:role'?: string
-          [key: string]: unknown 
+          [key: string]: unknown
         }
-        
+
         // Extract role from tokens
         let role = 'consumer'
         if (session.tokens.accessToken) {
@@ -179,7 +189,7 @@ export function useAuth(): UseAuthReturn {
         } else {
           role = extractRoleFromClaims(payload)
         }
-        
+
         const authUser: AuthUser = {
           username: currentUser.username || payload.email || payload.sub,
           email: payload.email,
@@ -189,36 +199,43 @@ export function useAuth(): UseAuthReturn {
         setUser(authUser)
         setIsAuthenticated(true)
         setError(null)
-        
+
         // Notify other tabs of refreshed session
-        localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify({ authenticated: true, timestamp: Date.now() }))
-        
+        localStorage.setItem(
+          AUTH_STORAGE_KEY,
+          JSON.stringify({ authenticated: true, timestamp: Date.now() })
+        )
+
         return true
       }
-      
+
       // Session refresh failed - might be expired refresh token
       throw new Error('Failed to refresh session')
     } catch (err) {
       // Check if it's a refresh token expiration error
       const error = err instanceof Error ? err : new Error('Failed to refresh session')
-      
+
       // Common Amplify errors for expired refresh token
-      if (error.message.includes('refresh') || error.message.includes('expired') || error.message.includes('NotAuthorizedException')) {
+      if (
+        error.message.includes('refresh') ||
+        error.message.includes('expired') ||
+        error.message.includes('NotAuthorizedException')
+      ) {
         // Refresh token expired - clear session and redirect to login
         setUser(null)
         setIsAuthenticated(false)
         setError(null)
         localStorage.removeItem(AUTH_STORAGE_KEY)
         window.dispatchEvent(new CustomEvent(AUTH_LOGOUT_EVENT))
-        
+
         // Redirect to login if we're not already there
         if (window.location.pathname !== '/login') {
           navigate('/login', { replace: true })
         }
-        
+
         return false
       }
-      
+
       setError(error)
       setUser(null)
       setIsAuthenticated(false)
@@ -229,98 +246,104 @@ export function useAuth(): UseAuthReturn {
   /**
    * Sign in with email and password
    */
-  const signInUser = useCallback(async (email: string, password: string) => {
-    setIsLoading(true)
-    setError(null)
-    
-    try {
-      const output: SignInOutput = await signIn({
-        username: email,
-        password,
-      })
+  const signInUser = useCallback(
+    async (email: string, password: string) => {
+      setIsLoading(true)
+      setError(null)
 
-      // Check if user needs to complete sign in (e.g., MFA, new password)
-      if (output.isSignedIn) {
-        await getCurrentSession()
-      } else {
-        // User needs to complete sign in flow
-        throw new Error('Sign in requires additional steps')
-      }
-    } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Authentication failed')
-      
-      // Map Amplify errors to user-friendly messages
-      if (err && typeof err === 'object' && 'name' in err) {
-        if (err.name === 'NotAuthorizedException') {
-          error.message = 'Incorrect email or password'
-        } else if (err.name === 'UserNotFoundException') {
-          error.message = 'User not found'
-        } else if (err.name === 'UserNotConfirmedException') {
-          error.message = 'Please confirm your email address'
-        } else if (err.name === 'TooManyRequestsException') {
-          error.message = 'Too many login attempts. Please try again later'
+      try {
+        const output: SignInOutput = await signIn({
+          username: email,
+          password,
+        })
+
+        // Check if user needs to complete sign in (e.g., MFA, new password)
+        if (output.isSignedIn) {
+          await getCurrentSession()
+        } else {
+          // User needs to complete sign in flow
+          throw new Error('Sign in requires additional steps')
         }
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error('Authentication failed')
+
+        // Map Amplify errors to user-friendly messages
+        if (err && typeof err === 'object' && 'name' in err) {
+          if (err.name === 'NotAuthorizedException') {
+            error.message = 'Incorrect email or password'
+          } else if (err.name === 'UserNotFoundException') {
+            error.message = 'User not found'
+          } else if (err.name === 'UserNotConfirmedException') {
+            error.message = 'Please confirm your email address'
+          } else if (err.name === 'TooManyRequestsException') {
+            error.message = 'Too many login attempts. Please try again later'
+          }
+        }
+
+        setError(error)
+        setUser(null)
+        setIsAuthenticated(false)
+        throw error
+      } finally {
+        setIsLoading(false)
       }
-      
-      setError(error)
-      setUser(null)
-      setIsAuthenticated(false)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [getCurrentSession])
+    },
+    [getCurrentSession]
+  )
 
   /**
    * Sign up with email and password
    * After successful sign-up, automatically signs in the user
    */
-  const signUpUser = useCallback(async (email: string, password: string) => {
-    setIsLoading(true)
-    setError(null)
-    
-    try {
-      const output: SignUpOutput = await signUp({
-        username: email,
-        password,
-        options: {
-          userAttributes: {
-            email,
-          },
-        },
-      })
+  const signUpUser = useCallback(
+    async (email: string, password: string) => {
+      setIsLoading(true)
+      setError(null)
 
-      // If sign-up is successful and email verification is disabled,
-      // automatically sign in the user
-      if (output.isSignUpComplete) {
-        // Sign in the user automatically
-        await signInUser(email, password)
-      } else {
-        // User needs to complete sign-up flow (e.g., email verification)
-        throw new Error('Sign up requires additional steps')
-      }
-    } catch (err: unknown) {
-      const error = err instanceof Error ? err : new Error('Sign up failed')
-      
-      // Map Amplify errors to user-friendly messages
-      if (err && typeof err === 'object' && 'name' in err) {
-        if (err.name === 'UsernameExistsException') {
-          error.message = 'An account with this email already exists'
-        } else if (err.name === 'InvalidPasswordException') {
-          error.message = 'Password does not meet requirements'
-        } else if (err.name === 'InvalidParameterException') {
-          error.message = 'Invalid email address'
-        } else if (err.name === 'TooManyRequestsException') {
-          error.message = 'Too many sign-up attempts. Please try again later'
+      try {
+        const output: SignUpOutput = await signUp({
+          username: email,
+          password,
+          options: {
+            userAttributes: {
+              email,
+            },
+          },
+        })
+
+        // If sign-up is successful and email verification is disabled,
+        // automatically sign in the user
+        if (output.isSignUpComplete) {
+          // Sign in the user automatically
+          await signInUser(email, password)
+        } else {
+          // User needs to complete sign-up flow (e.g., email verification)
+          throw new Error('Sign up requires additional steps')
         }
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error('Sign up failed')
+
+        // Map Amplify errors to user-friendly messages
+        if (err && typeof err === 'object' && 'name' in err) {
+          if (err.name === 'UsernameExistsException') {
+            error.message = 'An account with this email already exists'
+          } else if (err.name === 'InvalidPasswordException') {
+            error.message = 'Password does not meet requirements'
+          } else if (err.name === 'InvalidParameterException') {
+            error.message = 'Invalid email address'
+          } else if (err.name === 'TooManyRequestsException') {
+            error.message = 'Too many sign-up attempts. Please try again later'
+          }
+        }
+
+        setError(error)
+        throw error
+      } finally {
+        setIsLoading(false)
       }
-      
-      setError(error)
-      throw error
-    } finally {
-      setIsLoading(false)
-    }
-  }, [signInUser])
+    },
+    [signInUser]
+  )
 
   /**
    * Sign out current user and clear session
@@ -328,17 +351,17 @@ export function useAuth(): UseAuthReturn {
   const signOutUser = useCallback(async () => {
     setIsLoading(true)
     setError(null)
-    
+
     try {
       await signOut()
       setUser(null)
       setIsAuthenticated(false)
-      
+
       // Clear any stored tokens
       localStorage.removeItem('cognito_access_token')
       localStorage.removeItem('cognito_id_token')
       localStorage.removeItem('cognito_refresh_token')
-      
+
       // Clear auth state and notify other tabs
       localStorage.removeItem(AUTH_STORAGE_KEY)
       window.dispatchEvent(new CustomEvent(AUTH_LOGOUT_EVENT))
@@ -348,11 +371,11 @@ export function useAuth(): UseAuthReturn {
       // Still clear local state even if sign out fails
       setUser(null)
       setIsAuthenticated(false)
-      
+
       // Still notify other tabs
       localStorage.removeItem(AUTH_STORAGE_KEY)
       window.dispatchEvent(new CustomEvent(AUTH_LOGOUT_EVENT))
-      
+
       throw error
     } finally {
       setIsLoading(false)
@@ -374,10 +397,12 @@ export function useAuth(): UseAuthReturn {
     try {
       // Get current session to check expiration
       const session = await fetchAuthSession({ forceRefresh: false })
-      
+
       if (session.tokens?.accessToken) {
-        const expirationTime = getTokenExpirationTime(session.tokens.accessToken as { payload?: { exp?: number } })
-        
+        const expirationTime = getTokenExpirationTime(
+          session.tokens.accessToken as { payload?: { exp?: number } }
+        )
+
         if (expirationTime) {
           if (shouldRefreshToken(expirationTime)) {
             // Token needs refresh now
@@ -391,7 +416,7 @@ export function useAuth(): UseAuthReturn {
             const now = Date.now()
             const fiveMinutes = 5 * 60 * 1000
             const refreshTime = expirationTime - now - fiveMinutes
-            
+
             if (refreshTime > 0) {
               refreshTimeoutRef.current = setTimeout(async () => {
                 const refreshed = await refreshSession()
@@ -419,14 +444,14 @@ export function useAuth(): UseAuthReturn {
   // Initialize: Check for existing session on mount
   useEffect(() => {
     let mounted = true
-    
+
     const initAuth = async () => {
       try {
         await getCurrentSession()
         if (mounted) {
           await scheduleTokenRefresh()
         }
-      } catch (err) {
+      } catch {
         // No active session is not an error
         if (mounted) {
           setUser(null)
@@ -438,9 +463,9 @@ export function useAuth(): UseAuthReturn {
         }
       }
     }
-    
+
     initAuth()
-    
+
     return () => {
       mounted = false
       if (refreshTimeoutRef.current) {
@@ -516,4 +541,3 @@ export function useAuth(): UseAuthReturn {
     refreshSession,
   }
 }
-

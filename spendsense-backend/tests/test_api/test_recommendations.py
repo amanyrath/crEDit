@@ -3,7 +3,7 @@
 import pytest
 from datetime import datetime, timedelta
 from uuid import UUID, uuid4
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch, MagicMock, AsyncMock
 
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -114,7 +114,11 @@ class TestGetRecommendationsEndpoint:
     ):
         """Test successful recommendations retrieval"""
         # Setup mocks
+        # require_consumer is async, so we need to make it awaitable
+        async def async_require_consumer():
+            return mock_consumer_user
         mock_require_consumer.return_value = mock_consumer_user
+        mock_require_consumer.side_effect = async_require_consumer
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
         
@@ -176,7 +180,11 @@ class TestGetRecommendationsEndpoint:
     ):
         """Test empty state when no recommendations exist"""
         # Setup mocks
+        # require_consumer is async, so we need to make it awaitable
+        async def async_require_consumer():
+            return mock_consumer_user
         mock_require_consumer.return_value = mock_consumer_user
+        mock_require_consumer.side_effect = async_require_consumer
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
         
@@ -235,7 +243,11 @@ class TestGetRecommendationsEndpoint:
     ):
         """Test recommendations with decision traces"""
         # Setup mocks
+        # require_consumer is async, so we need to make it awaitable
+        async def async_require_consumer():
+            return mock_consumer_user
         mock_require_consumer.return_value = mock_consumer_user
+        mock_require_consumer.side_effect = async_require_consumer
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
         
@@ -295,7 +307,11 @@ class TestGetRecommendationsEndpoint:
     ):
         """Test that users can only access their own recommendations"""
         # Setup mocks
+        # require_consumer is async, so we need to make it awaitable
+        async def async_require_consumer():
+            return mock_consumer_user
         mock_require_consumer.return_value = mock_consumer_user
+        mock_require_consumer.side_effect = async_require_consumer
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
         
@@ -352,7 +368,11 @@ class TestGetRecommendationsEndpoint:
     ):
         """Test that education is limited to 5 and offers to 3"""
         # Setup mocks
+        # require_consumer is async, so we need to make it awaitable
+        async def async_require_consumer():
+            return mock_consumer_user
         mock_require_consumer.return_value = mock_consumer_user
+        mock_require_consumer.side_effect = async_require_consumer
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
         
@@ -446,7 +466,11 @@ class TestGetRecommendationsEndpoint:
     ):
         """Test response format matches specification"""
         # Setup mocks
+        # require_consumer is async, so we need to make it awaitable
+        async def async_require_consumer():
+            return mock_consumer_user
         mock_require_consumer.return_value = mock_consumer_user
+        mock_require_consumer.side_effect = async_require_consumer
         mock_session = Mock(spec=Session)
         mock_get_session.return_value.__enter__.return_value = mock_session
         

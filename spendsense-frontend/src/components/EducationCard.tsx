@@ -1,6 +1,20 @@
 import { useState } from 'react'
-import { CreditCard, PiggyBank, TrendingUp, Wallet, DollarSign, type LucideIcon } from 'lucide-react'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card'
+import {
+  CreditCard,
+  PiggyBank,
+  TrendingUp,
+  Wallet,
+  DollarSign,
+  type LucideIcon,
+} from 'lucide-react'
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,7 +26,13 @@ import {
 import { RationaleBox } from './RationaleBox'
 import { cn } from '@/lib/utils'
 
-export type EducationCategory = 'credit' | 'savings' | 'budgeting' | 'debt' | 'investing' | 'general'
+export type EducationCategory =
+  | 'credit'
+  | 'savings'
+  | 'budgeting'
+  | 'debt'
+  | 'investing'
+  | 'general'
 
 export interface EducationCardProps {
   /**
@@ -99,7 +119,7 @@ const categoryColors: Record<EducationCategory, { border: string; icon: string }
  * EducationCard component
  * Displays personalized financial education content in a card format.
  * Includes icon, title, description, rationale box, tags, and expandable full content.
- * 
+ *
  * Features:
  * - Category-based color coding and icons
  * - Expandable full content (modal)
@@ -239,4 +259,3 @@ export function EducationCard({
     </>
   )
 }
-

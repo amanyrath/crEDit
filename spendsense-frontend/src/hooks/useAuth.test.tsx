@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, waitFor, act } from '@testing-library/react'
 import { signIn, signOut, getCurrentUser, fetchAuthSession } from '@aws-amplify/auth'
 import { useAuth } from './useAuth'
@@ -36,7 +37,7 @@ describe('useAuth', () => {
       localStorage.removeItem('cognito_access_token')
       localStorage.removeItem('cognito_id_token')
       localStorage.removeItem('cognito_refresh_token')
-    } catch (e) {
+    } catch {
       // Ignore if localStorage is not available
     }
     mockNavigate.mockClear()
@@ -115,9 +116,9 @@ describe('useAuth', () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     await act(async () => {
-      await expect(
-        result.current.signIn('test@example.com', 'wrongpassword')
-      ).rejects.toThrow('Incorrect email or password')
+      await expect(result.current.signIn('test@example.com', 'wrongpassword')).rejects.toThrow(
+        'Incorrect email or password'
+      )
     })
 
     expect(result.current.isAuthenticated).toBe(false)
@@ -132,9 +133,9 @@ describe('useAuth', () => {
     const { result } = renderHook(() => useAuth(), { wrapper })
 
     await act(async () => {
-      await expect(
-        result.current.signIn('notfound@example.com', 'password123')
-      ).rejects.toThrow('User not found')
+      await expect(result.current.signIn('notfound@example.com', 'password123')).rejects.toThrow(
+        'User not found'
+      )
     })
 
     expect(result.current.error?.message).toBe('User not found')
@@ -345,7 +346,7 @@ describe('useAuth', () => {
 
     vi.mocked(getCurrentUser).mockResolvedValue(mockUser as any)
     vi.mocked(fetchAuthSession).mockResolvedValueOnce(mockSession as any)
-    
+
     // Mock refresh failure due to expired refresh token
     const refreshError = new Error('Refresh token expired')
     refreshError.message = 'refresh expired'
@@ -485,6 +486,3 @@ describe('useAuth', () => {
     })
   })
 })
-
-
-

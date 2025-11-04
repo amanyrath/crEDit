@@ -111,7 +111,7 @@ class TestInsightsEndpoint:
     """Test insights API endpoint"""
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_without_auth(self, mock_require_consumer, mock_get_session, client):
         """Test endpoint without authentication returns 401"""
         mock_require_consumer.side_effect = Exception("Unauthorized")
@@ -120,7 +120,7 @@ class TestInsightsEndpoint:
         assert response.status_code == 401
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_default_period(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test endpoint with default period (30d)"""
         mock_require_consumer.return_value = mock_consumer_user
@@ -163,7 +163,7 @@ class TestInsightsEndpoint:
         assert data["meta"]["period"] == "30d"
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_90d_period(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test endpoint with 90d period"""
         mock_require_consumer.return_value = mock_consumer_user
@@ -199,7 +199,7 @@ class TestInsightsEndpoint:
         data = response.json()
         assert data["meta"]["period"] == "90d"
     
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_invalid_period(self, mock_require_consumer, client, mock_consumer_user):
         """Test endpoint with invalid period parameter"""
         mock_require_consumer.return_value = mock_consumer_user
@@ -214,7 +214,7 @@ class TestInsightsEndpoint:
         assert "Period must be '30d' or '90d'" in response.json()["detail"]
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_with_credit_accounts(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions, mock_credit_account):
         """Test endpoint with credit card accounts"""
         mock_require_consumer.return_value = mock_consumer_user
@@ -260,7 +260,7 @@ class TestInsightsEndpoint:
         assert len(data["data"]["charts"]["credit_utilization"]) > 0
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_empty_transactions(self, mock_require_consumer, mock_get_session, client, mock_consumer_user):
         """Test endpoint with no transactions"""
         mock_require_consumer.return_value = mock_consumer_user
@@ -296,7 +296,7 @@ class TestInsightsEndpoint:
         assert data["data"]["charts"]["credit_utilization"] == []
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_response_structure(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test response structure matches specification"""
         mock_require_consumer.return_value = mock_consumer_user
@@ -360,7 +360,7 @@ class TestInsightsEndpoint:
         assert "end_date" in meta
     
     @patch('app.api.v1.consumer.get_session')
-    @patch('app.dependencies.require_consumer')
+    @patch('app.api.v1.consumer.require_consumer')
     def test_get_insights_subscription_detection(self, mock_require_consumer, mock_get_session, client, mock_consumer_user, mock_transactions):
         """Test subscription detection logic"""
         mock_require_consumer.return_value = mock_consumer_user

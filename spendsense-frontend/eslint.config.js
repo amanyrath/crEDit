@@ -23,6 +23,11 @@ export default defineConfig([
     },
     rules: {
       'prettier/prettier': 'error',
+      // Allow exporting constants alongside components (common in shadcn/ui)
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
     },
     languageOptions: {
       ecmaVersion: 2020,

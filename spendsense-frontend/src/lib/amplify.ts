@@ -29,4 +29,3 @@ export function configureAmplify() {
 
 // Auto-configure on module load
 configureAmplify()
-

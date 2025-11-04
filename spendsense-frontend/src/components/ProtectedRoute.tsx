@@ -38,16 +38,15 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   if (requiredRole && user?.role !== requiredRole) {
     // Redirect to dashboard if user doesn't have required role
     return (
-      <Navigate 
-        to="/dashboard" 
-        state={{ 
-          error: `You don't have permission to access this page. Required role: ${requiredRole}` 
-        }} 
-        replace 
+      <Navigate
+        to="/dashboard"
+        state={{
+          error: `You don't have permission to access this page. Required role: ${requiredRole}`,
+        }}
+        replace
       />
     )
   }
 
   return <>{children}</>
 }
-

@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react'
 export function DashboardPage() {
   const { user, signOut, isLoading } = useAuthContext()
   const navigate = useNavigate()
-  
+
   // Consent status placeholder - will be replaced with API call in next story
   const [consentGranted, setConsentGranted] = useState<boolean | null>(null)
   const [showConsentModal, setShowConsentModal] = useState(false)
@@ -131,6 +131,3 @@ export function DashboardPage() {
     </>
   )
 }
-
-
-

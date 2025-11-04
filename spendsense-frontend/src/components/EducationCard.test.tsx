@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { EducationCard } from './EducationCard'
@@ -47,7 +47,7 @@ describe('EducationCard', () => {
   it('opens modal when "Learn More" button is clicked', async () => {
     const user = userEvent.setup()
     render(<EducationCard {...mockEducationCard} />)
-    
+
     const learnMoreButton = screen.getByRole('button', { name: /learn more/i })
     await user.click(learnMoreButton)
 
@@ -86,7 +86,10 @@ describe('EducationCard', () => {
     render(<EducationCard {...mockEducationCard} />)
     const card = screen.getByRole('article')
     expect(card).toHaveAttribute('aria-labelledby', `education-title-${mockEducationCard.id}`)
-    expect(card).toHaveAttribute('aria-describedby', `education-description-${mockEducationCard.id}`)
+    expect(card).toHaveAttribute(
+      'aria-describedby',
+      `education-description-${mockEducationCard.id}`
+    )
   })
 
   it('handles empty tags array', () => {
@@ -97,7 +100,7 @@ describe('EducationCard', () => {
   it('closes modal when dialog is closed', async () => {
     const user = userEvent.setup()
     render(<EducationCard {...mockEducationCard} />)
-    
+
     const learnMoreButton = screen.getByRole('button', { name: /learn more/i })
     await user.click(learnMoreButton)
 
@@ -110,9 +113,7 @@ describe('EducationCard', () => {
   })
 
   it('accepts custom className', () => {
-    const { container } = render(
-      <EducationCard {...mockEducationCard} className="custom-class" />
-    )
+    const { container } = render(<EducationCard {...mockEducationCard} className="custom-class" />)
     const card = container.querySelector('[role="article"]')
     expect(card).toHaveClass('custom-class')
   })
@@ -129,4 +130,3 @@ describe('EducationCard', () => {
     expect(savingsContainer.querySelector('svg')).toBeInTheDocument()
   })
 })
-

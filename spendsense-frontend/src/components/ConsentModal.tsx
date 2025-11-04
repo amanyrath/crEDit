@@ -37,14 +37,17 @@ export function ConsentModal({ open, onAccept, onDecline }: ConsentModalProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={() => {
-      // Prevent closing modal by clicking overlay or pressing Escape
-      // Modal can only be closed by Accept or Decline buttons
-    }}>
+    <Dialog
+      open={open}
+      onOpenChange={() => {
+        // Prevent closing modal by clicking overlay or pressing Escape
+        // Modal can only be closed by Accept or Decline buttons
+      }}
+    >
       <DialogContent
         className="sm:max-w-[600px]"
-        onEscapeKeyDown={(e) => e.preventDefault()}
-        onInteractOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={e => e.preventDefault()}
+        onInteractOutside={e => e.preventDefault()}
         aria-describedby="consent-description"
         role="dialog"
         aria-modal="true"
@@ -64,8 +67,8 @@ export function ConsentModal({ open, onAccept, onDecline }: ConsentModalProps) {
           <div className="space-y-2">
             <h2 className="text-lg font-semibold">How We Use Your Data</h2>
             <p className="text-sm text-muted-foreground">
-              SpendSense analyzes your financial data to provide personalized recommendations
-              and insights to help you make better financial decisions.
+              SpendSense analyzes your financial data to provide personalized recommendations and
+              insights to help you make better financial decisions.
             </p>
           </div>
 
@@ -94,7 +97,7 @@ export function ConsentModal({ open, onAccept, onDecline }: ConsentModalProps) {
             <Checkbox
               id="consent-checkbox"
               checked={consentChecked}
-              onCheckedChange={(checked) => setConsentChecked(checked === true)}
+              onCheckedChange={checked => setConsentChecked(checked === true)}
               aria-label="I consent to SpendSense analyzing my financial data"
               aria-describedby="consent-checkbox-description"
               className="mt-1"
@@ -125,7 +128,7 @@ export function ConsentModal({ open, onAccept, onDecline }: ConsentModalProps) {
             disabled={!consentChecked}
             className="w-full sm:w-auto"
             aria-label="Accept consent"
-            aria-describedby={!consentChecked ? "accept-disabled-description" : undefined}
+            aria-describedby={!consentChecked ? 'accept-disabled-description' : undefined}
           >
             Accept
           </Button>
@@ -139,4 +142,3 @@ export function ConsentModal({ open, onAccept, onDecline }: ConsentModalProps) {
     </Dialog>
   )
 }
-

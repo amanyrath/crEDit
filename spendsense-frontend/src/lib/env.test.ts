@@ -35,6 +35,3 @@ describe('Environment Variables', () => {
     expect(viteKeys.length).toBeGreaterThanOrEqual(3)
   })
 })
-
-
-
