@@ -1,0 +1,59 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'spendsense-backend/**'
+      - 'infrastructure/**'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy Backend to AWS Lambda
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: infrastructure/cdk
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: infrastructure/cdk/requirements.txt
+
+      - name: Install CDK dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Install CDK CLI
+        run: npm install -g aws-cdk
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+      - name: Deploy Lambda stack
+        env:
+          ENVIRONMENT: ${{ secrets.ENVIRONMENT || 'dev' }}
+        run: |
+          cdk deploy SpendSense-Lambda-$ENVIRONMENT --require-approval never
+
+      - name: Verify deployment
+        run: |
+          echo "Deployment completed successfully"
+          aws cloudformation describe-stacks \
+            --stack-name SpendSense-Lambda-${{ secrets.ENVIRONMENT || 'dev' }} \
+            --query 'Stacks[0].StackStatus' \
+            --output text
+

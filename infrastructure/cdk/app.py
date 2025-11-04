@@ -6,6 +6,8 @@ import os
 import aws_cdk as cdk
 from stacks.database_stack import DatabaseStack
 from stacks.cognito_stack import CognitoStack
+from stacks.lambda_stack import LambdaStack
+from stacks.s3_stack import S3Stack
 
 app = cdk.App()
 
@@ -33,6 +35,22 @@ cognito_stack = CognitoStack(
     f"SpendSense-Cognito-{env_name}",
     env=env,
     description="Cognito User Pool, groups, and Secrets Manager configuration for SpendSense"
+)
+
+# Lambda Stack - Lambda Functions and API Gateway
+lambda_stack = LambdaStack(
+    app,
+    f"SpendSense-Lambda-{env_name}",
+    env=env,
+    description="Lambda functions and API Gateway for SpendSense"
+)
+
+# S3 Stack - S3 Buckets and CloudFront Distribution
+s3_stack = S3Stack(
+    app,
+    f"SpendSense-S3-{env_name}",
+    env=env,
+    description="S3 buckets and CloudFront distribution for SpendSense frontend hosting"
 )
 
 app.synth()
