@@ -6,6 +6,7 @@ FastAPI backend application for the SpendSense financial education platform.
 
 - Python 3.11 or later
 - pip
+- AWS CLI installed separately (not via pip - see troubleshooting below)
 
 ## Setup
 
@@ -19,9 +20,11 @@ FastAPI backend application for the SpendSense financial education platform.
 2. **Install dependencies:**
 
    ```bash
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt
+   pip install -r requirements.txt -c .pip-constraints.txt
+   pip install -r requirements-dev.txt -c .pip-constraints.txt
    ```
+   
+   **Note:** The `-c .pip-constraints.txt` flag prevents installation of the `aws` Python package, which conflicts with AWS CLI. Use `boto3` for AWS SDK access instead.
 
 3. **Configure environment variables:**
 
@@ -216,4 +219,55 @@ Once the server is running, interactive API documentation is available at:
 - **Linting**: Ruff (to be configured)
 - **Type Checking**: mypy (to be configured)
 - **Testing**: pytest with pytest-asyncio
+
+## Database Seeding
+
+For development and testing, you can seed the database with demo user data:
+
+```bash
+# Set up environment variables
+source scripts/setup_seed_env.sh
+
+# Run seeding script
+python scripts/seed_demo_data.py
+
+# Verify seeding
+python scripts/verify_seeding.py
+```
+
+**See [scripts/README_SEEDING.md](scripts/README_SEEDING.md) for detailed documentation.**
+
+The seeding script creates:
+- 3 demo users in Cognito
+- 9 accounts (3 per user)
+- ~530 transactions with realistic patterns
+
+**Security Note**: The seeding script is for development/testing only. It uses demo passwords and test data - never use in production.
+
+## Troubleshooting
+
+### AWS CLI Conflict
+
+**Problem:** If you see an error like `ImportError: cannot import name 'api' from 'fabric'` when running `aws` command, it means the Python `aws` package is installed in your virtual environment and is conflicting with the AWS CLI.
+
+**Solution:**
+
+1. **Remove the conflicting package:**
+   ```bash
+   pip uninstall aws
+   rm -f venv/bin/aws
+   ```
+
+2. **Verify AWS CLI is working:**
+   ```bash
+   which aws  # Should show /usr/local/bin/aws or /opt/homebrew/bin/aws
+   aws --version  # Should show aws-cli version, not Python package
+   ```
+
+3. **Prevent future conflicts:**
+   - Always use `pip install -r requirements.txt -c .pip-constraints.txt` when installing dependencies
+   - The `.pip-constraints.txt` file prevents installation of the `aws` Python package
+   - Use `boto3` for AWS SDK access in Python code, not the `aws` package
+
+**Note:** The AWS CLI (`aws-cli`) must be installed separately via Homebrew (macOS), apt/yum (Linux), or the official AWS installer. It should NOT be installed via pip.
 

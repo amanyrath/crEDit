@@ -45,3 +45,5 @@ aws ec2 describe-security-groups \
 echo ""
 echo "💡 Use one of the GroupIds above for the security group rule"
 
+
+

@@ -1,0 +1,8 @@
+# Package Constraints for SpendSense Backend
+# This file prevents installation of packages that conflict with system tools
+
+# DO NOT install the 'aws' Python package - it conflicts with AWS CLI
+# The AWS CLI (aws-cli) is installed separately and should be used instead
+aws==0.0.0 ; python_version >= "3.0"
+
+

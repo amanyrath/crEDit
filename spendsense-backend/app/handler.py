@@ -6,3 +6,5 @@ from app.main import app
 # Create ASGI adapter for Lambda
 handler = Mangum(app)
 
+
+

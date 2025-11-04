@@ -53,3 +53,5 @@ def test_settings_import():
     assert settings.cognito_client_id is not None, "settings.cognito_client_id should be loaded"
     assert settings.aws_region == "us-east-1", "settings.aws_region should default to us-east-1"
 
+
+

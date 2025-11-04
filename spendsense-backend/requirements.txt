@@ -1,5 +1,9 @@
 # Production dependencies for SpendSense Backend
 # Python 3.11+ required
+#
+# IMPORTANT: Do NOT install the 'aws' Python package - it conflicts with AWS CLI
+# Use 'boto3' for AWS SDK access instead. AWS CLI should be installed separately.
+# If accidentally installed, run: pip uninstall aws && rm -f venv/bin/aws
 
 # FastAPI and ASGI server
 fastapi>=0.115.0
@@ -24,3 +28,6 @@ openai>=1.54.0
 sqlalchemy>=2.0.0
 psycopg2-binary>=2.9.9
 alembic>=1.13.0
+
+# Data generation
+faker>=33.0.0

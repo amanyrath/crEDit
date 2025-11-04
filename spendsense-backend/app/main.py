@@ -20,3 +20,5 @@ async def root():
     """Root endpoint"""
     return {"message": "SpendSense API"}
 
+
+
