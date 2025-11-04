@@ -5,7 +5,7 @@ import os
 from typing import Optional
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError, BotoCoreError
 from sqlalchemy import create_engine, Engine
 
 from app.config import settings
@@ -38,7 +38,9 @@ def get_db_url_from_secrets_manager() -> Optional[str]:
                 # If not JSON, assume it's a plain connection string
                 return secret_value
                 
-        except ClientError as e:
+        except (ClientError, NoCredentialsError, BotoCoreError) as e:
+            # Handle AWS errors gracefully (ClientError, NoCredentialsError, etc.)
+            # This prevents errors during test collection when AWS credentials aren't available
             print(f"Error retrieving database secret: {e}")
             return None
     return None
