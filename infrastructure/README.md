@@ -162,6 +162,10 @@ python3 create_demo_users.py
 - `sam@demo.com` / `Demo123!` (Consumer)
 - `operator@demo.com` / `Demo123!` (Operator)
 
+⚠️  **SECURITY WARNING:** These are demo accounts with intentionally weak passwords for testing purposes only. 
+    These credentials should NEVER be used in production environments. Change all demo passwords immediately 
+    in any production deployment.
+
 **Note:** The password `Demo123!` meets Cognito password policy requirements:
 - Minimum 8 characters
 - At least one uppercase letter
@@ -281,7 +285,7 @@ USER_POOL_ID=$(aws secretsmanager get-secret-value \
   --query SecretString \
   --output text | jq -r '.user_pool_id')
 
-# Authenticate demo user
+# Authenticate demo user (⚠️ uses demo password - for testing only)
 aws cognito-idp initiate-auth \
   --auth-flow USER_PASSWORD_AUTH \
   --client-id $CLIENT_ID \

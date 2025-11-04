@@ -7,9 +7,14 @@ This script creates demo users and adds them to appropriate groups:
 - sam@demo.com / Demo123! (Consumer)
 - operator@demo.com / Demo123! (Operator)
 
+⚠️  SECURITY WARNING: This script uses a hardcoded demo password for testing purposes only.
+   This password is intentionally weak and should NEVER be used in production.
+   Demo accounts are for development and testing environments only.
+   
 Note: Uses password "Demo123!" which meets Cognito password policy requirements.
 """
 import json
+import os
 import sys
 import boto3
 from botocore.exceptions import ClientError
@@ -120,13 +125,16 @@ def main():
         print(f"✅ User Pool ID: {user_pool_id}")
 
     # Demo users configuration
+    # ⚠️  SECURITY: Demo password hardcoded for testing only - never use in production
     # Using password "Demo123!" which meets Cognito password policy:
     # - Minimum 8 characters
     # - At least one uppercase letter
     # - At least one lowercase letter
     # - At least one number
     # - At least one special character
-    demo_password = "Demo123!"
+    # You can override this with an environment variable if needed:
+    # DEMO_PASSWORD=YourPassword python3 create_demo_users.py
+    demo_password = os.getenv("DEMO_PASSWORD", "Demo123!")
 
     demo_users = [
         {

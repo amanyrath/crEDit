@@ -1,6 +1,6 @@
 # Story 1.5: Create AWS Cognito User Pool
 
-Status: in-progress
+Status: review
 
 ## Story
 
@@ -284,5 +284,7 @@ Claude Sonnet 4.5 (via Cursor)
   - Set up Secrets Manager secret for Cognito configuration
   - Created helper scripts for configuration updates and demo user creation
   - Updated documentation with deployment and usage instructions
+  - Fixed AuthFlow configuration issue (removed invalid refresh_token parameter)
   - All tasks completed except Task 5 (optional domain) and Task 8 (deployment verification)
+  - Story ready for review
 

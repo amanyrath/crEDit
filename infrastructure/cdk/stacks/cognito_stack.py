@@ -67,9 +67,9 @@ class CognitoStack(Stack):
             generate_secret=False,  # Public client for web/mobile apps
             auth_flows=cognito.AuthFlow(
                 user_password=True,
-                refresh_token=True,
                 user_srp=False,  # Can be enabled later if needed
             ),
+            # Refresh tokens are automatically enabled when auth flows are configured
             access_token_validity=Duration.hours(1),
             id_token_validity=Duration.hours(1),
             refresh_token_validity=Duration.days(30),
