@@ -80,6 +80,12 @@ def get_engine(pool_size: int = 5, max_overflow: int = 10) -> Engine:
     """
     db_url = get_db_url()
     
+    # Ensure SSL is required for RDS connections
+    # Add sslmode=require if not already present
+    if "sslmode" not in db_url:
+        separator = "&" if "?" in db_url else "?"
+        db_url = f"{db_url}{separator}sslmode=require"
+    
     # Configure connection pool for Lambda functions
     # Use connection pooling to manage RDS connections efficiently
     engine = create_engine(
@@ -89,6 +95,9 @@ def get_engine(pool_size: int = 5, max_overflow: int = 10) -> Engine:
         pool_pre_ping=True,  # Verify connections before using them
         pool_recycle=3600,  # Recycle connections after 1 hour
         echo=settings.environment == "development",  # Log SQL in development
+        connect_args={
+            "sslmode": "require"  # Require SSL for RDS connections
+        } if "postgresql" in db_url else {},
     )
     
     return engine

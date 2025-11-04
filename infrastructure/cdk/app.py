@@ -5,6 +5,7 @@ AWS CDK App for SpendSense Infrastructure
 import os
 import aws_cdk as cdk
 from stacks.database_stack import DatabaseStack
+from stacks.cognito_stack import CognitoStack
 
 app = cdk.App()
 
@@ -24,6 +25,14 @@ database_stack = DatabaseStack(
     f"SpendSense-Database-{env_name}",
     env=env,
     description="RDS PostgreSQL database and Secrets Manager configuration for SpendSense"
+)
+
+# Cognito Stack - User Pool and Groups
+cognito_stack = CognitoStack(
+    app,
+    f"SpendSense-Cognito-{env_name}",
+    env=env,
+    description="Cognito User Pool, groups, and Secrets Manager configuration for SpendSense"
 )
 
 app.synth()

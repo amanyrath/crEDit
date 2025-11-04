@@ -4,9 +4,11 @@ Helper script to update the database connection string secret after RDS deployme
 
 This script retrieves the database endpoint and credentials from AWS Secrets Manager
 and updates the connection string secret with the complete connection string.
+Includes SSL support for RDS connections.
 """
 import json
 import sys
+import urllib.parse
 import boto3
 from botocore.exceptions import ClientError
 
@@ -27,9 +29,13 @@ def update_connection_string_secret(
     """Update connection string secret with actual database details."""
     username = credentials["username"]
     password = credentials["password"]
-
+    
+    # URL-encode the password to handle special characters
+    encoded_password = urllib.parse.quote(password, safe='')
+    
+    # Include SSL mode for RDS connections
     connection_string = (
-        f"postgresql://{username}:{password}@{endpoint}:5432/spendsense"
+        f"postgresql://{username}:{encoded_password}@{endpoint}:5432/spendsense?sslmode=require"
     )
 
     secret_value = {

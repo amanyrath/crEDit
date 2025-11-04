@@ -48,15 +48,33 @@ cdk deploy SpendSense-Database-dev
 cdk deploy SpendSense-Database-dev --context environment=dev --context region=us-east-1
 ```
 
+### Deploy Cognito Stack
+
+```bash
+# Deploy to default environment (dev)
+cdk deploy SpendSense-Cognito-dev
+
+# Deploy to specific environment
+cdk deploy SpendSense-Cognito-dev --context environment=dev --context region=us-east-1
+```
+
 ### View Stack Outputs
 
 After deployment, stack outputs will show:
+
+**Database Stack:**
 - Database endpoint
 - Database port
 - Database name
 - Credentials secret ARN
 - Connection string secret ARN
 - Lambda security group ID
+
+**Cognito Stack:**
+- User Pool ID
+- User Pool ARN
+- User Pool Client ID
+- Cognito configuration secret ARN
 
 ## Post-Deployment Steps
 
@@ -96,9 +114,62 @@ postgresql://username:password@host:5432/database_name
 
 **Option B: Using Python Script**
 
-A helper script will be created in `infrastructure/scripts/` to automate this.
+Use the helper script to automate this:
+```bash
+cd infrastructure/scripts
+python3 update_connection_string.py --stack-name SpendSense-Database-dev
+```
 
-### 2. Configure Local Development Access
+### 2. Update Cognito Configuration Secret
+
+After the Cognito stack is deployed, update the Cognito configuration secret with actual values:
+
+**Option A: Using Python Script (Recommended)**
+
+```bash
+cd infrastructure/scripts
+python3 update_cognito_config.py --stack-name SpendSense-Cognito-dev
+```
+
+**Option B: Using AWS CLI**
+
+1. Get the Cognito configuration from stack outputs:
+   ```bash
+   aws cloudformation describe-stacks \
+     --stack-name SpendSense-Cognito-dev \
+     --query 'Stacks[0].Outputs' \
+     --output json
+   ```
+
+2. Update the secret with the values:
+   ```bash
+   aws secretsmanager put-secret-value \
+     --secret-id spendsense/cognito/configuration \
+     --secret-string '{"user_pool_id":"<user_pool_id>","user_pool_arn":"<user_pool_arn>","client_id":"<client_id>","region":"us-east-1"}'
+   ```
+
+### 3. Create Demo Users
+
+After updating the Cognito configuration secret, create demo users:
+
+```bash
+cd infrastructure/scripts
+python3 create_demo_users.py
+```
+
+**Demo Account Credentials:**
+- `hannah@demo.com` / `Demo123!` (Consumer)
+- `sam@demo.com` / `Demo123!` (Consumer)
+- `operator@demo.com` / `Demo123!` (Operator)
+
+**Note:** The password `Demo123!` meets Cognito password policy requirements:
+- Minimum 8 characters
+- At least one uppercase letter
+- At least one lowercase letter
+- At least one number
+- At least one special character
+
+### 4. Configure Local Development Access
 
 For local development, you'll need to configure security group rules to allow your IP address:
 
@@ -117,9 +188,52 @@ aws ec2 authorize-security-group-ingress \
 
 **Important:** Remove this rule when not developing locally for security.
 
+## Retrieving Cognito Configuration
+
+### User Pool ID and Client ID
+
+**Option A: From Stack Outputs**
+```bash
+aws cloudformation describe-stacks \
+  --stack-name SpendSense-Cognito-dev \
+  --query 'Stacks[0].Outputs[?OutputKey==`UserPoolId`].OutputValue' \
+  --output text
+
+aws cloudformation describe-stacks \
+  --stack-name SpendSense-Cognito-dev \
+  --query 'Stacks[0].Outputs[?OutputKey==`UserPoolClientId`].OutputValue' \
+  --output text
+```
+
+**Option B: From Secrets Manager**
+```bash
+aws secretsmanager get-secret-value \
+  --secret-id spendsense/cognito/configuration \
+  --query SecretString \
+  --output text | jq
+```
+
+### Adding Users to Groups
+
+To add a user to a group (consumers or operators):
+```bash
+aws cognito-idp admin-add-user-to-group \
+  --user-pool-id <USER_POOL_ID> \
+  --username <USERNAME> \
+  --group-name consumers  # or "operators"
+```
+
+### Authenticating Users
+
+Users can authenticate using:
+- Direct sign-in with email/password (USER_PASSWORD_AUTH flow)
+- Refresh token authentication (REFRESH_TOKEN_AUTH flow)
+
+See Story 2.2 and 2.3 for backend integration details.
+
 ## Testing Connection
 
-### From Local Environment
+### Database Connection - From Local Environment
 
 1. **Install PostgreSQL client**
    ```bash
@@ -145,7 +259,36 @@ aws ec2 authorize-security-group-ingress \
 
 ### Using Python Script
 
-A test script will be created in `infrastructure/scripts/test_connection.py`.
+Test database connection using:
+```bash
+cd infrastructure/scripts
+python3 test_connection.py
+```
+
+### Cognito Authentication Testing
+
+Test Cognito authentication using AWS CLI:
+```bash
+# Get client ID
+CLIENT_ID=$(aws secretsmanager get-secret-value \
+  --secret-id spendsense/cognito/configuration \
+  --query SecretString \
+  --output text | jq -r '.client_id')
+
+# Get user pool ID
+USER_POOL_ID=$(aws secretsmanager get-secret-value \
+  --secret-id spendsense/cognito/configuration \
+  --query SecretString \
+  --output text | jq -r '.user_pool_id')
+
+# Authenticate demo user
+aws cognito-idp initiate-auth \
+  --auth-flow USER_PASSWORD_AUTH \
+  --client-id $CLIENT_ID \
+  --auth-parameters USERNAME=hannah@demo.com,PASSWORD=Demo123!
+```
+
+Or use the demo users created by the `create_demo_users.py` script.
 
 ## Security Considerations
 
@@ -196,23 +339,36 @@ infrastructure/
 │   ├── requirements.txt          # Python dependencies
 │   └── stacks/
 │       ├── __init__.py
-│       └── database_stack.py     # RDS PostgreSQL stack
+│       ├── database_stack.py     # RDS PostgreSQL stack
+│       └── cognito_stack.py      # Cognito User Pool stack
 └── scripts/                      # Helper scripts
-    └── (to be created)
+    ├── update_connection_string.py  # Update database connection secret
+    ├── update_cognito_config.py     # Update Cognito configuration secret
+    ├── create_demo_users.py         # Create demo users in Cognito
+    └── test_connection.py           # Test database connection
 ```
 
 ## Cost Considerations
 
+**Database Stack:**
 - **db.t3.micro**: ~$15/month (eligible for free tier in first year)
 - **Storage**: $0.115/GB/month for gp2
 - **Backups**: Included in storage cost (7-day retention)
 - **Secrets Manager**: $0.40/month per secret
 - **KMS**: $1/month per key + $0.03 per 10,000 requests
 
+**Cognito Stack:**
+- **Cognito User Pool**: Free tier includes 50,000 MAUs (Monthly Active Users)
+- **Beyond free tier**: $0.0055 per MAU
+- **Secrets Manager**: $0.40/month per secret
+
 ## Next Steps
 
-After deploying the database stack:
+After deploying the infrastructure stacks:
 1. Update connection string secret (see Post-Deployment Steps)
-2. Test connection from local environment
-3. Proceed to Story 1.4: Create Database Schema
+2. Update Cognito configuration secret (see Post-Deployment Steps)
+3. Create demo users (see Post-Deployment Steps)
+4. Test connections from local environment
+5. Proceed to Story 1.4: Create Database Schema (if not done)
+6. Proceed to Story 2.2: Integrate AWS Cognito Authentication
 
